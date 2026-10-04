@@ -170,10 +170,14 @@ Através do cumprimento rigoroso do planeamento da aplicação e da integração
 ---
 
 ## Anexos
+ ![](imagens/mockup2.jpeg) <br>
+* **Figura A.1** – Design System e Guia de Estilos da Aplicação TCMatcher
 
-* **Figura A.1** – Design System e Guia de Estilos da Aplicação TCMatcher (Figma)
+ ![](imagens/mockup3.jpeg) <br>
 * **Figura A.2** – Ecrãs de Interação do Jogador, Deteção e Histórico de Partidas
-* **Figura A.3** – Interfaces de Gestão de Eventos e Lojas Parceiras
+
+ ![](imagens/mockup1.jpeg) <br>
+* **Figura A.3** – Interfaces de Gestão de Eventos e Lojas Parceiras 
 
 ---
 
