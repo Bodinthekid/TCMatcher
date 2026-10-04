@@ -1,6 +1,6 @@
 # UNIVERSIDADE EUROPEIA / IADE
 ## Faculdade de Design, Tecnologia e Comunicação
-### Licenciatura em Engenharia Informática (L-EI)
+### Licenciatura em Engenharia Informática
 **Projeto Multidisciplinar – Projeto Mobile (3.º Semestre / 2026-2027)**
 
 ---
