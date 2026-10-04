@@ -21,7 +21,7 @@
   * **Email Institucional:** 20251469@iade.pt
 
 * **Estudante 2:**
-  * **Nome Completo:** Matheus Reis Correi Borges
+  * **Nome Completo:** Matheus Reis Correia Borges
   * **Número de Estudante:** 20250417
   * **Curso:** Licenciatura em Engenharia Informática
   * **Ano Curricular:** 2.º Ano / 3.º Semestre
