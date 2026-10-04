@@ -5,7 +5,7 @@
 ---
 
 ## 👥 Elementos do Grupo
-* **[Matheus Reis Correi Borges]** - [20250417] 
+* **[Matheus Reis Correia Borges]** - [20250417] 
 * **[Nome do Aluno 2]** - [Número] 
 * **[Nome do Aluno 3]** - [Número] 
 * **[Nome do Aluno 4]** - [Número] 
