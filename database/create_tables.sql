@@ -1,5 +1,6 @@
 -- ============================================================================
--- PROJETO: TCMatcher - Plataforma de Geolocalização para TCGs
+-- PROJETO: TCMatcher - Modelo Entidade-Relação (ERM-II)
+-- UC: Bases de Dados - Prof. Miguel Boavida
 -- BASE DE DADOS: tcmatcher_db
 -- MOTOR DE ARMAZENAMENTO: InnoDB (Suporte para transações e Foreign Keys)
 -- CODIFICAÇÃO: UTF-8 (utf8mb4) para suporte a múltiplos carateres e emojis
@@ -14,16 +15,17 @@ CREATE DATABASE IF NOT EXISTS tcmatcher_db
 USE tcmatcher_db;
 
 -- ----------------------------------------------------------------------------
--- 1. TABELA: users
+-- 1. ENTIDADE BASE / SUPERCLASSE: users
+-- CONCEITO ERM: Entidade Genérica / Herança (Supertype)
 -- DESCRIÇÃO: Tabela principal de contas. Armazena credenciais e localização 
---            de todos os utilizadores (jogadores, gestores de lojas e admins).
+--            geográfica de todos os utilizadores (jogadores, lojas e admins).
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único e chave primária do utilizador
     name VARCHAR(100) NOT NULL,                                  -- Nome completo do utilizador ou nome do responsável
     email VARCHAR(150) NOT NULL UNIQUE,                          -- Endereço de e-mail único para autenticação e contacto
     password VARCHAR(255) NOT NULL,                              -- Hash de segurança da palavra-passe de acesso
-    account_type ENUM('PLAYER', 'STORE', 'ADMIN') NOT NULL DEFAULT 'PLAYER', -- Distingue o perfil de acesso e permissões
+    account_type ENUM('PLAYER', 'STORE', 'ADMIN') NOT NULL DEFAULT 'PLAYER', -- Discriminador de Subtipo (perfil de acesso)
     latitude DECIMAL(10, 8) NULL,                                -- Coordenada de latitude geográfica para o mapa
     longitude DECIMAL(11, 8) NULL,                               -- Coordenada de longitude geográfica para o mapa
     visibility_radius_km DECIMAL(5, 2) DEFAULT 5.00,             -- Raio máximo em km definido pelo jogador para encontrar rivais
@@ -32,7 +34,8 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 2. TABELA: tcg_games
+-- 2. ENTIDADE PROMOVIDA: tcg_games
+-- CONCEITO ERM: Atributo Promovido a Entidade para Garantir Consistência
 -- DESCRIÇÃO: Catálogo central dos jogos de cartas (TCGs) suportados pela app.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tcg_games (
@@ -42,12 +45,13 @@ CREATE TABLE IF NOT EXISTS tcg_games (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 3. TABELA: player_profiles
+-- 3. SUBCLASSE / ESPECIALIZAÇÃO 1: player_profiles
+-- CONCEITO ERM: Herança / Subtype (Especialização do 'users' do tipo PLAYER)
 -- DESCRIÇÃO: Extensão 1:1 da tabela users contendo dados específicos do jogador.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS player_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único da ficha de perfil
-    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira para o utilizador (relação 1:1)
+    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira e relação 1:1 com a Superclasse users
     experience_level ENUM('BEGINNER', 'CASUAL', 'COMPETITIVE') DEFAULT 'CASUAL', -- Nível de habilidade do jogador
     bio TEXT NULL,                                              -- Biografia ou apresentação curta exibida no perfil público
     FOREIGN KEY (user_id) REFERENCES users(id) 
@@ -55,9 +59,9 @@ CREATE TABLE IF NOT EXISTS player_profiles (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 4. TABELA: player_games
--- DESCRIÇÃO: Tabela de junção (N:M) entre users e tcg_games.
---            Associa quais TCGs cada jogador pratica/tem interesse.
+-- 4. TABELA DE LIGAÇÃO (DECOMPOSIÇÃO N:M): player_games
+-- CONCEITO ERM: Decomposição da Relação Muitos-para-Muitos (users <-> tcg_games)
+-- DESCRIÇÃO: Associa quais TCGs cada jogador pratica ou tem interesse.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS player_games (
     user_id INT NOT NULL,                                        -- Chave estrangeira que referencia o jogador
@@ -70,13 +74,13 @@ CREATE TABLE IF NOT EXISTS player_games (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 5. TABELA: stores
--- DESCRIÇÃO: Extensão 1:1 da tabela users para contas do tipo 'STORE'.
---            Guarda dados do estabelecimento físico e informações comerciais.
+-- 5. SUBCLASSE / ESPECIALIZAÇÃO 2: stores
+-- CONCEITO ERM: Herança / Subtype (Especialização do 'users' do tipo STORE)
+-- DESCRIÇÃO: Extensão 1:1 da tabela users para contas do tipo STORE.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS stores (
     id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único da loja física
-    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira para a conta de utilizador (relação 1:1)
+    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira e relação 1:1 com a Superclasse users
     store_name VARCHAR(150) NOT NULL,                            -- Nome comercial ou público do estabelecimento
     address VARCHAR(255) NOT NULL,                               -- Endereço físico completo da loja
     phone VARCHAR(20) NULL,                                      -- Número de contacto telefónico da loja
@@ -86,7 +90,8 @@ CREATE TABLE IF NOT EXISTS stores (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 6. TABELA: tournaments
+-- 6. ENTIDADE: tournaments
+-- CONCEITO ERM: Relações 1:N entre 'stores' e 'tcg_games'
 -- DESCRIÇÃO: Regista os torneios e eventos organizados pelas lojas.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tournaments (
@@ -106,9 +111,9 @@ CREATE TABLE IF NOT EXISTS tournaments (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 7. TABELA: tournament_registrations
--- DESCRIÇÃO: Tabela de junção (N:M) entre users e tournaments.
---            Controla inscritos e o check-in presencial no evento.
+-- 7. TABELA DE LIGAÇÃO (DECOMPOSIÇÃO N:M): tournament_registrations
+-- CONCEITO ERM: Decomposição da Relação Muitos-para-Muitos (users <-> tournaments)
+-- DESCRIÇÃO: Controla inscritos e o check-in presencial no evento.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tournament_registrations (
     id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único do comprovativo de inscrição
@@ -124,9 +129,9 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 8. TABELA: matches
+-- 8. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): matches
+-- CONCEITO ERM: Auto-Relacionamento N:M na própria Entidade 'users'
 -- DESCRIÇÃO: Guarda o registo das partidas disputadas entre dois jogadores.
---            Utilizado para os cálculos de estatísticas e taxa de vitórias.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS matches (
     id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único do registo da partida
@@ -148,7 +153,8 @@ CREATE TABLE IF NOT EXISTS matches (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 9. TABELA: chat_messages
+-- 9. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): chat_messages
+-- CONCEITO ERM: Auto-Relacionamento 1:N / N:M na própria Entidade 'users'
 -- DESCRIÇÃO: Regista as mensagens trocadas no chat direto entre utilizadores.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS chat_messages (
