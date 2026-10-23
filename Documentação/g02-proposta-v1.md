@@ -157,8 +157,7 @@ A localização exata dos utilizadores **nunca será publicamente exibida**. Em 
 
 ## Planeamento e Calendarização
 
-*(Ver cronograma detalhado de tarefas e entregas no diagrama de Gantt do projeto).*
-
+![](imagens/GráficodeGantt.jpeg) <br>
 ---
 
 ## Conclusão
