@@ -134,22 +134,20 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
 -- DESCRIÇÃO: Guarda o registo das partidas disputadas entre dois jogadores.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS matches (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único do registo da partida
-    player1_id INT NOT NULL,                                     -- Chave estrangeira do primeiro participante
-    player2_id INT NOT NULL,                                     -- Chave estrangeira do segundo participante
-    game_id INT NOT NULL,                                        -- Chave estrangeira do TCG disputado na partida
-    winner_id INT NULL,                                          -- Chave estrangeira do jogador vencedor (NULL em caso de empate)
-    is_confirmed TINYINT(1) DEFAULT 0,                           -- Validação cruzada (1/0) da submissão por parte do adversário
-    played_at DATETIME DEFAULT CURRENT_TIMESTAMP,                -- Data e hora em que a partida foi efetuada/registada
-    CONSTRAINT chk_different_players CHECK (player1_id <> player2_id), -- Garante que um jogador não joga contra si próprio
-    FOREIGN KEY (player1_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Mantém integridade se o jogador 1 for removido
-    FOREIGN KEY (player2_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Mantém integridade se o jogador 2 for removido
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    player1_id INT NOT NULL,
+    player2_id INT NOT NULL,
+    game_id INT NOT NULL,
+    winner_id INT NULL,
+    is_confirmed TINYINT(1) DEFAULT 0,
+    played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_different_players CHECK (player1_id <> player2_id),
+    FOREIGN KEY (player1_id) REFERENCES users(id),
+    FOREIGN KEY (player2_id) REFERENCES users(id),
     FOREIGN KEY (game_id) REFERENCES tcg_games(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Mantém integridade se o TCG for removido
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (winner_id) REFERENCES users(id) 
-        ON DELETE SET NULL ON UPDATE CASCADE                     -- Mantém o histórico da partida mesmo se a conta do vencedor for apagada
+        ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
