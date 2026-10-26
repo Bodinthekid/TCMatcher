@@ -1,0 +1,35 @@
+{
+    "description": "Exemplos de payloads (Raw JSON) para registo de utilizadores na API TCMatcher (POST /api/users/register)",
+    "player_example": {
+    "request": {
+    "name": "João Silva",
+    "email": "joao.player@example.com",
+    "password": "PasswordSegura123!",
+    "account_type": "PLAYER",
+    "latitude": 38.7223,
+    "longitude": -9.1393
+    },
+    "expected_response_201": {
+    "message": "Conta de PLAYER registada com sucesso!",
+    "userId": 1
+    }
+    },
+    "store_example": {
+    "request": {
+    "name": "Carlos Manteigas",
+    "email": "contacto@tcgarena.pt",
+    "password": "PasswordLoja123!",
+    "account_type": "STORE",
+    "latitude": 38.736944,
+    "longitude": -9.142685,
+    "store_name": "TCG Arena Lisboa",
+    "address": "Av. da República 45, 1050-187 Lisboa",
+    "phone": "+351 210 987 654",
+    "opening_hours": "Terça a Domingo: 11:00 - 20:00"
+    },
+    "expected_response_201": {
+    "message": "Conta de STORE registada com sucesso!",
+    "userId": 2
+    }
+    }
+    }

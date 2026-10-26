@@ -1,5 +1,5 @@
 # Variáveis de ambiente
-backend/.env
+.env
 
 # Dependências Node.js
-backend/node_modules/
+node_modules/
