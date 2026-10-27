@@ -10,9 +10,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json()); // Permite receber dados em formato JSON no body das requisições
 app.use(cors());         // Permite requisições do frontend (Flutter)
 
-// Importar e usar as rotas de utilizadores
+// Importar existentes
 const userRoutes = require('./src/routes/userRoutes');
+const storeRoutes = require('./src/routes/storeRoutes'); // <-- Adicionar aqui
+
+// Registar rotas na aplicação
 app.use('/api/users', userRoutes);
+app.use('/api/stores', storeRoutes); // <-- Adicionar aqui
 
 // Rota de teste básica para verificar se o servidor está vivo
 app.get('/', (req, res) => {
