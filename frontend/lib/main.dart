@@ -19,10 +19,11 @@ class TcgCompanionApp extends StatelessWidget {
       title: 'TCG Matchmaking & Discovery',
       debugShowCheckedModeBanner: false,
       theme: AppColors.darkTheme,
-      home: const PaginaLogin(),
+      home: const PaginaLogin(), 
     );
   }
 }
+
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});

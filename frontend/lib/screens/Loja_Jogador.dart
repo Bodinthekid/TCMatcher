@@ -38,7 +38,7 @@ class PaginaJGLJ extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: screenSize.height * 0.04),
-                        // Botão Jogador com largura controlada (50% do ecrã)
+
                         SizedBox(
                           width: screenSize.width * 0.3,
                           child: ElevatedButton(
@@ -54,7 +54,6 @@ class PaginaJGLJ extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        // Botão Loja com a mesma largura
                         SizedBox(
                           width: screenSize.width * 0.3,
                           child: ElevatedButton(

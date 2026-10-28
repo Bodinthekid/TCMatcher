@@ -35,7 +35,6 @@ class _PaginaRegisterJGState extends State<PaginaRegisterJG> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                // Garante que o conteúdo ocupa pelo menos a altura total do ecrã disponível
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
@@ -45,8 +44,8 @@ class _PaginaRegisterJGState extends State<PaginaRegisterJG> {
                   child: Form(
                     key: formKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Centra no eixo Y se houver espaço
-                      crossAxisAlignment: CrossAxisAlignment.center, // Centra no eixo X
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center, 
                       children: [
                         SizedBox(
                           width: screenSize.width * 0.35,
