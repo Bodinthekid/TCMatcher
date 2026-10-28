@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../theme/app_colors.dart';
-import '../widgets/login/login_widgets.dart';
+import '../widgets/auth/auth_logo.dart';          // Importação modular do logótipo
+import '../widgets/auth/auth_text_field.dart';   // Importação modular dos campos de texto
+import '../widgets/auth/auth_button_row.dart';   // Importação modular da linha de botões
 import 'account_type_screen.dart';
 
+/// [LoginScreen]
+/// Ecrã principal de autenticação: Atua estritamente como esqueleto estrutural,
+/// orquestrando o formulário, validações, gestão de controladores e navegação.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -12,17 +17,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Chave global para gerir e validar o estado do formulário de login
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  // Controladores para capturar os dados introduzidos nos campos de texto
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    // Liberta os controladores da memória quando o ecrã é destruído para evitar fugas de recursos
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  // Função responsável por validar os campos e executar a transição para o ecrã principal (MainShell)
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       Navigator.pushReplacement(
@@ -49,8 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 1. Logótipo modular com ícone alternativo de cadeado
                 const AuthLogo(fallbackIcon: Icons.lock_outline_rounded),
                 const SizedBox(height: 60),
+
+                // 2. Campo de texto modular para o email com validação integrada
                 AuthTextField(
                   controller: _emailController,
                   hintText: 'Email',
@@ -67,6 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
+
+                // 3. Campo de texto modular para a palavra-passe com ocultação de caracteres
                 AuthTextField(
                   controller: _passwordController,
                   hintText: 'Password',
@@ -80,12 +95,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
+
+                // 4. Linha de botões modulares para submeter o login ou navegar para o registo
                 AuthButtonRow(
                   primaryFirst: true,
                   primaryLabel: 'Login',
                   onPrimaryTap: _handleLogin,
                   secondaryLabel: 'Register',
                   onSecondaryTap: () {
+                    // Navega para o ecrã de seleção do tipo de conta (AccountTypeScreen)
                     Navigator.push(
                       context,
                       MaterialPageRoute(
