@@ -4,8 +4,12 @@ import '../widgets/shared_widgets.dart';
 import '../widgets/discover/discover_header.dart';
 import '../widgets/discover/discover_search_bar.dart';
 import '../widgets/discover/discover_game_filters.dart';
+import '../widgets/discover/discover_map_preview.dart'; // Import do novo widget de mapa
 import '../widgets/discover/discover_featured_event_card.dart';
 
+/// [DiscoverScreen]
+/// Ecrã principal de descoberta: Funciona como esqueleto estrutural,
+/// integrando a pesquisa, filtros, mapa geolocalizado, jogadores próximos e eventos.
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -23,27 +27,31 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Cabeçalho
+          // 1. Cabeçalho com indicador de localização e notificações
           DiscoverHeader(
             locationText: 'BROOKLYN · 3 PLAYERS NEARBY',
             onNotificationTap: () {},
           ),
           const SizedBox(height: 20),
 
-          // 2. Barra de Pesquisa
+          // 2. Barra de Pesquisa global
           const DiscoverSearchBar(),
           const SizedBox(height: 16),
 
-          // 3. Filtros por Jogo TCG
+          // 3. Filtros por Jogo TCG (Pokémon, Yu-Gi-Oh!, Magic, etc.)
           DiscoverGameFilters(
             selectedFilterIndex: _selectedGameFilter,
             onFilterSelected: (index) {
               setState(() => _selectedGameFilter = index);
             },
           ),
+          const SizedBox(height: 20),
+
+          // 4. Pré-visualização do Mapa (Preparado para futura API de geolocalização)
+          const DiscoverMapPreview(),
           const SizedBox(height: 24),
 
-          // 4. Cabeçalho da Lista de Jogadores
+          // 5. Cabeçalho da Lista de Jogadores Próximos
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -63,7 +71,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
           const SizedBox(height: 14),
 
-          // 5. Cards de Jogadores Próximos
+          // 6. Cards compactos de jogadores detetados na zona
           const CompactPlayerCard(
             name: 'Maya Chen',
             subtitle: '0.8 mi · Competitive',
@@ -85,7 +93,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
           const SizedBox(height: 16),
 
-          // 6. Card do Evento / Loja
+          // 7. Card em destaque com o evento/loja em evidência
           const DiscoverFeaturedEventCard(
             tag: 'MAGIC · TODAY',
             title: 'Friday\nNight\nCommander',

@@ -5,6 +5,7 @@ import '../widgets/matchmaking/matchmaking_status_banner.dart';
 import '../widgets/matchmaking/matchmaking_preferences_card.dart';
 import '../widgets/matchmaking/strong_match_card.dart';
 import '../widgets/matchmaking/matchmaking_action_button.dart';
+import '../widgets/matchmaking/players_section.dart';
 
 /// Ecrã principal de Matchmaking: Atua estritamente como esqueleto estrutural,
 /// unindo todos os componentes modulares de procura de oponentes.
@@ -35,8 +36,11 @@ class MatchmakingScreen extends StatelessWidget {
 
           // 4. Cartão em destaque com o perfil do oponente mais compatível
           const StrongMatchCard(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
+          PlayersSection(),
+          
+          const SizedBox(height: 16),
           // 5. Botão principal de ação modularizado
           MatchmakingActionButton(
             onPressed: () {
