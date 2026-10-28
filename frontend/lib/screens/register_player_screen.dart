@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../widgets/auth/auth_logo.dart';         // Importação modular do logótipo
-import '../widgets/auth/auth_text_field.dart';  // Importação modular dos campos de texto
-import '../widgets/auth/auth_button_row.dart';  // Importação modular da linha de botões
+import '../controllers/auth_controller.dart'; // Importa o controller
+import '../widgets/auth/auth_logo.dart';
+import '../widgets/auth/auth_text_field.dart';
+import '../widgets/auth/auth_button_row.dart';
 import 'login_screen.dart';
 
-/// [RegisterPlayerScreen]
-/// Ecrã responsável por gerir o fluxo de registo de novos jogadores na plataforma TCG.
-/// Orquestra o formulário, as validações de email e palavra-passe, e a navegação de retorno.
 class RegisterPlayerScreen extends StatefulWidget {
   const RegisterPlayerScreen({super.key});
 
@@ -16,30 +14,53 @@ class RegisterPlayerScreen extends StatefulWidget {
 }
 
 class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
-  // Chave global para controlar e validar o estado do formulário de registo
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // Controladores para recolher os dados introduzidos nos inputs
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  // Instância do controller de autenticação para este ecrã
+  final AuthController _authController = AuthController();
+
   @override
   void dispose() {
-    // Liberta os controladores da memória quando o ecrã é destruído para evitar fugas de recursos
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _authController.dispose();
     super.dispose();
   }
 
-  // Função responsável por validar os campos e concluir o registo (redirecionando para o login)
-  void _handleRegister() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Delega a ação ao Controller
+    final success = await _authController.registerPlayer(
+      name: _nameController.text.trim().isEmpty ? 'Novo Jogador' : _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false, // Remove todas as rotas anteriores da pilha de navegação
+        (route) => false,
+      );
+    } else {
+      // Exibe o erro gerado pelo backend (ex: email já registado) através do controller
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage ?? 'Erro ao registar.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -61,20 +82,15 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 1. Logótipo modular com ícone de adição de utilizador
                 const AuthLogo(fallbackIcon: Icons.person_add_alt_1_rounded),
                 const SizedBox(height: 60),
-
-                // 2. Campo modular para o email com validação de formato
                 AuthTextField(
                   controller: _emailController,
                   hintText: 'Email',
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final email = value?.trim() ?? '';
-                    if (email.isEmpty) {
-                      return 'Please enter your email.';
-                    }
+                    if (email.isEmpty) return 'Please enter your email.';
                     if (!email.contains('@') || !email.contains('.')) {
                       return 'Please enter a valid email.';
                     }
@@ -82,32 +98,24 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-
-                // 3. Campo modular para a palavra-passe (ocultada)
                 AuthTextField(
                   controller: _passwordController,
                   hintText: 'Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
-                    if (password.isEmpty) {
-                      return 'Please enter a password.';
-                    }
+                    if (password.isEmpty) return 'Please enter a password.';
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
-
-                // 4. Campo modular para confirmação da palavra-passe
                 AuthTextField(
                   controller: _confirmPasswordController,
                   hintText: 'Confirm Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
-                    if (password.isEmpty) {
-                      return 'Please confirm your password.';
-                    }
+                    if (password.isEmpty) return 'Please confirm your password.';
                     if (password != _passwordController.text.trim()) {
                       return 'Passwords do not match.';
                     }
@@ -116,13 +124,20 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 5. Linha modular de botões (Voltar atrás e Submeter Registo)
-                AuthButtonRow(
-                  secondaryLabel: 'Back',
-                  onSecondaryTap: () => Navigator.pop(context),
-                  primaryLabel: 'Register',
-                  onPrimaryTap: _handleRegister,
-                  primaryFirst: false, // O botão secundário (Back) fica à esquerda e o primário à direita
+                // Reativo ao estado de loading do Controller usando AnimatedBuilder ou setState simples
+                AnimatedBuilder(
+                  animation: _authController,
+                  builder: (context, _) {
+                    return _authController.isLoading
+                        ? const CircularProgressIndicator(color: AppColors.primaryPurple)
+                        : AuthButtonRow(
+                            secondaryLabel: 'Back',
+                            onSecondaryTap: () => Navigator.pop(context),
+                            primaryLabel: 'Register',
+                            onPrimaryTap: _handleRegister,
+                            primaryFirst: false,
+                          );
+                  },
                 ),
               ],
             ),
