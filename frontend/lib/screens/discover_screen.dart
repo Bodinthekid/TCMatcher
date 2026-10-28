@@ -138,6 +138,29 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             ],
           ),
           const SizedBox(height: 24),
+          Container(
+            height: 160,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.network(
+              'https://t4.ftcdn.net/jpg/03/38/37/73/360_F_338377354_1Y6oyGrvaae2kqY3YS07b6X4NDKZntne.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: AppColors.surfaceLight,
+                child: const Icon(
+                  Icons.location_on_outlined,
+                  color: AppColors.textMuted,
+                  size: 40,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
