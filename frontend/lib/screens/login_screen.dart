@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../theme/app_colors.dart';
 import '../widgets/login/login_widgets.dart';
-import 'loja_jogador_screen.dart';
+import 'account_type_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,7 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Login'),
+        centerTitle: true,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -52,10 +58,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (value) {
                     final email = value?.trim() ?? '';
                     if (email.isEmpty) {
-                      return 'Introduz o email.';
+                      return 'Please enter your email.';
                     }
                     if (!email.contains('@') || !email.contains('.')) {
-                      return 'Introduz um email válido.';
+                      return 'Please enter a valid email.';
                     }
                     return null;
                   },
@@ -68,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (value) {
                     final password = value?.trim() ?? '';
                     if (password.isEmpty) {
-                      return 'Introduz uma password.';
+                      return 'Please enter your password.';
                     }
                     return null;
                   },
@@ -78,12 +84,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   primaryFirst: true,
                   primaryLabel: 'Login',
                   onPrimaryTap: _handleLogin,
-                  secondaryLabel: 'Registar',
+                  secondaryLabel: 'Register',
                   onSecondaryTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LojaJogadorScreen(),
+                        builder: (context) => const AccountTypeScreen(),
                       ),
                     );
                   },

@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import '../widgets/login/login_widgets.dart';
 import 'login_screen.dart';
 
-class RegistarLojaScreen extends StatefulWidget {
-  const RegistarLojaScreen({super.key});
+class RegisterStoreScreen extends StatefulWidget {
+  const RegisterStoreScreen({super.key});
 
   @override
-  State<RegistarLojaScreen> createState() => _RegistarLojaScreenState();
+  State<RegisterStoreScreen> createState() => _RegisterStoreScreenState();
 }
 
-class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
+class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _codigoPostalController = TextEditingController();
-  final TextEditingController _moradaController = TextEditingController();
+  final TextEditingController _postalCodeController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _codigoPostalController.dispose();
-    _moradaController.dispose();
+    _postalCodeController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -41,7 +42,12 @@ class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registar Loja'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Register Store'),
+        centerTitle: true,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -59,10 +65,10 @@ class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
                   validator: (value) {
                     final email = value?.trim() ?? '';
                     if (email.isEmpty) {
-                      return 'Introduz o email.';
+                      return 'Please enter your email.';
                     }
                     if (!email.contains('@') || !email.contains('.')) {
-                      return 'Introduz um email válido.';
+                      return 'Please enter a valid email.';
                     }
                     return null;
                   },
@@ -75,7 +81,7 @@ class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
                   validator: (value) {
                     final password = value?.trim() ?? '';
                     if (password.isEmpty) {
-                      return 'Introduz uma password.';
+                      return 'Please enter a password.';
                     }
                     return null;
                   },
@@ -83,45 +89,45 @@ class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
                 const SizedBox(height: 12),
                 AuthTextField(
                   controller: _confirmPasswordController,
-                  hintText: 'Confirmar Password',
+                  hintText: 'Confirm Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
                     if (password.isEmpty) {
-                      return 'Introduz uma password.';
+                      return 'Please confirm your password.';
                     }
                     if (password != _passwordController.text.trim()) {
-                      return 'As passes não correspondem.';
+                      return 'Passwords do not match.';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
                 AuthTextField(
-                  controller: _codigoPostalController,
-                  hintText: 'Código Postal (XXXX-XXX)',
+                  controller: _postalCodeController,
+                  hintText: 'Postal Code (XXXX-XXX)',
                   keyboardType: TextInputType.datetime,
                   validator: (value) {
-                    final codigopostal = value?.trim() ?? '';
-                    if (codigopostal.isEmpty) {
-                      return 'Introduz o Código Postal.';
+                    final postalCode = value?.trim() ?? '';
+                    if (postalCode.isEmpty) {
+                      return 'Please enter the postal code.';
                     }
                     final regex = RegExp(r'^\d{4}-\d{3}$');
-                    if (!regex.hasMatch(codigopostal)) {
-                      return 'Introduz um código postal válido.';
+                    if (!regex.hasMatch(postalCode)) {
+                      return 'Please enter a valid postal code (e.g., 1000-001).';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
                 AuthTextField(
-                  controller: _moradaController,
-                  hintText: 'Morada',
+                  controller: _addressController,
+                  hintText: 'Address',
                   keyboardType: TextInputType.streetAddress,
                   validator: (value) {
-                    final morada = value?.trim() ?? '';
-                    if (morada.isEmpty) {
-                      return 'Introduz a Morada.';
+                    final address = value?.trim() ?? '';
+                    if (address.isEmpty) {
+                      return 'Please enter the store address.';
                     }
                     return null;
                   },
@@ -130,7 +136,7 @@ class _RegistarLojaScreenState extends State<RegistarLojaScreen> {
                 AuthButtonRow(
                   secondaryLabel: 'Back',
                   onSecondaryTap: () => Navigator.pop(context),
-                  primaryLabel: 'Registar',
+                  primaryLabel: 'Register',
                   onPrimaryTap: _handleRegister,
                 ),
               ],

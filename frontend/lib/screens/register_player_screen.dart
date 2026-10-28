@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import '../widgets/login/login_widgets.dart';
 import 'login_screen.dart';
 
-class RegisterJogadorScreen extends StatefulWidget {
-  const RegisterJogadorScreen({super.key});
+class RegisterPlayerScreen extends StatefulWidget {
+  const RegisterPlayerScreen({super.key});
 
   @override
-  State<RegisterJogadorScreen> createState() => _RegisterJogadorScreenState();
+  State<RegisterPlayerScreen> createState() => _RegisterPlayerScreenState();
 }
 
-class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
+class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -37,7 +38,12 @@ class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registar Jogador'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Register Player'),
+        centerTitle: true,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -55,10 +61,10 @@ class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
                   validator: (value) {
                     final email = value?.trim() ?? '';
                     if (email.isEmpty) {
-                      return 'Introduz o email.';
+                      return 'Please enter your email.';
                     }
                     if (!email.contains('@') || !email.contains('.')) {
-                      return 'Introduz um email válido.';
+                      return 'Please enter a valid email.';
                     }
                     return null;
                   },
@@ -71,7 +77,7 @@ class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
                   validator: (value) {
                     final password = value?.trim() ?? '';
                     if (password.isEmpty) {
-                      return 'Introduz uma password.';
+                      return 'Please enter a password.';
                     }
                     return null;
                   },
@@ -79,15 +85,15 @@ class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
                 const SizedBox(height: 12),
                 AuthTextField(
                   controller: _confirmPasswordController,
-                  hintText: 'Confirmar Password',
+                  hintText: 'Confirm Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
                     if (password.isEmpty) {
-                      return 'Introduz uma password.';
+                      return 'Please confirm your password.';
                     }
                     if (password != _passwordController.text.trim()) {
-                      return 'As passes não correspondem.';
+                      return 'Passwords do not match.';
                     }
                     return null;
                   },
@@ -96,7 +102,7 @@ class _RegisterJogadorScreenState extends State<RegisterJogadorScreen> {
                 AuthButtonRow(
                   secondaryLabel: 'Back',
                   onSecondaryTap: () => Navigator.pop(context),
-                  primaryLabel: 'Registar',
+                  primaryLabel: 'Register',
                   onPrimaryTap: _handleRegister,
                 ),
               ],

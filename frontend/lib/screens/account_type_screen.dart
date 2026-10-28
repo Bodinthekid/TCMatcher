@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/login/login_widgets.dart';
-import 'register_jogador_screen.dart';
-import 'registar_loja_screen.dart';
+import 'register_player_screen.dart';
+import 'register_store_screen.dart';
 
-class LojaJogadorScreen extends StatelessWidget {
-  const LojaJogadorScreen({super.key});
+class AccountTypeScreen extends StatelessWidget {
+  const AccountTypeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registar'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Register'),
+        centerTitle: true,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -27,7 +32,7 @@ class LojaJogadorScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegisterJogadorScreen(),
+                        builder: (context) => const RegisterPlayerScreen(),
                       ),
                     );
                   },
@@ -39,7 +44,7 @@ class LojaJogadorScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Jogador',
+                    'Player',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -53,7 +58,7 @@ class LojaJogadorScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegistarLojaScreen(),
+                        builder: (context) => const RegisterStoreScreen(),
                       ),
                     );
                   },
@@ -65,7 +70,7 @@ class LojaJogadorScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Loja',
+                    'Store',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
