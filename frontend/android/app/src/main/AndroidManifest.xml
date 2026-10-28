@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Adiciona esta linha para permitir que a app descarregue imagens da internet -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="tc_matcher"
         android:name="${applicationName}"
@@ -42,4 +45,4 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
-</manifest>
+</manifest> 
