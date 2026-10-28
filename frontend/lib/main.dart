@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tc_matcher/screens/Login.dart';
 import 'theme/app_colors.dart';
 import 'screens/discover_screen.dart';
 import 'screens/matchmaking_screen.dart';
@@ -18,7 +19,7 @@ class TcgCompanionApp extends StatelessWidget {
       title: 'TCG Matchmaking & Discovery',
       debugShowCheckedModeBanner: false,
       theme: AppColors.darkTheme,
-      home: const MainShell(),
+      home: const PaginaLogin(),
     );
   }
 }
