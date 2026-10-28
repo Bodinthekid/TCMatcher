@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../controllers/auth_controller.dart'; // Importa o controller
+import '../controllers/auth_controller.dart';
 import '../widgets/auth/auth_logo.dart';
 import '../widgets/auth/auth_text_field.dart';
 import '../widgets/auth/auth_button_row.dart';
@@ -20,7 +20,6 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  // Instância do controller de autenticação para este ecrã
   final AuthController _authController = AuthController();
 
   @override
@@ -36,9 +35,9 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Delega a ação ao Controller
+    // Envia o nome introduzido pelo utilizador para o backend através do controller
     final success = await _authController.registerPlayer(
-      name: _nameController.text.trim().isEmpty ? 'Novo Jogador' : _nameController.text.trim(),
+      name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
@@ -55,7 +54,6 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
         (route) => false,
       );
     } else {
-      // Exibe o erro gerado pelo backend (ex: email já registado) através do controller
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_authController.errorMessage ?? 'Erro ao registar.'),
@@ -83,7 +81,21 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const AuthLogo(fallbackIcon: Icons.person_add_alt_1_rounded),
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
+                
+                // NOVO CAMPO: Nome de Utilizador
+                AuthTextField(
+                  controller: _nameController,
+                  hintText: 'Username',
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your username.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
                 AuthTextField(
                   controller: _emailController,
                   hintText: 'Email',
@@ -124,7 +136,6 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Reativo ao estado de loading do Controller usando AnimatedBuilder ou setState simples
                 AnimatedBuilder(
                   animation: _authController,
                   builder: (context, _) {
