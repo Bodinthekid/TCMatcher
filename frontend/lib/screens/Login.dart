@@ -45,7 +45,7 @@ class _PaginaLoginState extends State<PaginaLogin> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
                       child: Image.asset(
-                        'images/logo.png',
+                        'imagens/logo.png',
                         fit: BoxFit.cover,
                       ),
                     ),

@@ -32,7 +32,7 @@ class PaginaJGLJ extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
                             child: Image.asset(
-                              'images/logo.png',
+                              'imagens/logo.png',
                               fit: BoxFit.cover,
                             ),
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'Login.dart';
 import '../theme/app_colors.dart';
 
@@ -45,13 +46,16 @@ class _PaginaRegisterJGState extends State<PaginaRegisterJG> {
                     key: formKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center, 
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
                           width: screenSize.width * 0.35,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset('images/logo.png', fit: BoxFit.cover),
+                            child: Image.asset(
+                              'imagens/logo.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         SizedBox(height: screenSize.height * 0.04),

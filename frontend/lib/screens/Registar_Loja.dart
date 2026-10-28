@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'Login.dart';
 import '../theme/app_colors.dart';
 
@@ -13,7 +14,8 @@ class _PaginaRegisterLJState extends State<PaginaRegisterLJ> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmpasswordController = TextEditingController();
+  final TextEditingController confirmpasswordController =
+      TextEditingController();
   final TextEditingController codigopostalControler = TextEditingController();
   final TextEditingController moradaControler = TextEditingController();
 
@@ -47,14 +49,17 @@ class _PaginaRegisterLJState extends State<PaginaRegisterLJ> {
                   child: Form(
                     key: formKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, 
-                      crossAxisAlignment: CrossAxisAlignment.center, 
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
                           width: screenSize.width * 0.35,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset('images/logo.png', fit: BoxFit.cover),
+                            child: Image.asset(
+                              'imagens/logo.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         SizedBox(height: screenSize.height * 0.04),
