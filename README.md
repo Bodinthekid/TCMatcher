@@ -6,7 +6,7 @@
 
 ## 👥 Elementos do Grupo
 * **[Matheus Reis Correia Borges]** - [20250417] 
-* **[Nome do Aluno 2]** - [Número] 
+* **[Elmer Otchali Safeca Moreso]** - [20250922] 
 * **[Nome do Aluno 3]** - [Número] 
 * **[Nome do Aluno 4]** - [Número] 
 
