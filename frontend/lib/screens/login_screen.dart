@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../theme/app_colors.dart';
-import '../widgets/auth/auth_logo.dart';          // Importação modular do logótipo
-import '../widgets/auth/auth_text_field.dart';   // Importação modular dos campos de texto
-import '../widgets/auth/auth_button_row.dart';   // Importação modular da linha de botões
+import '../services/auth_services.dart'; // 👈 Importa o teu AuthService
+import '../widgets/auth/auth_logo.dart';
+import '../widgets/auth/auth_text_field.dart';
+import '../widgets/auth/auth_button_row.dart';
 import 'account_type_screen.dart';
 
 /// [LoginScreen]
@@ -32,13 +33,38 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Função responsável por validar os campos e executar a transição para o ecrã principal (MainShell)
-  void _handleLogin() {
+  // Função responsável por validar os campos, chamar o backend e gerir o login
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainShell()),
-      );
+      try {
+        // 1. Envia as credenciais para o backend através do AuthService
+        final response = await AuthService.login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        // Opcional: Podes ler o tipo de conta (PLAYER ou STORE) se precisares mais à frente
+        final accountType = response['user']['account_type'];
+
+        // 2. Se o login for bem-sucedido (200 OK), avança para o MainShell
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainShell()),
+        );
+
+      } catch (e) {
+        // 3. Se o backend recusar (email errado, pass incorreta, etc.), apanha o erro aqui!
+        final errorMessage = e.toString().replaceAll('Exception: ', '');
+        
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red, // Vermelho para destacar o erro
+          ),
+        );
+      }
     }
   }
 

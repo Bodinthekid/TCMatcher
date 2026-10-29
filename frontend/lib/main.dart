@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 1. Importa o pacote dotenv
 import 'theme/app_colors.dart';
 import 'screens/login_screen.dart';
 import 'screens/discover_screen.dart';
@@ -6,7 +7,13 @@ import 'screens/matchmaking_screen.dart';
 import 'screens/events_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() {
+Future<void> main() async {
+  // 2. Garante que os motores do Flutter estão inicializados antes de carregar ficheiros externos
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 3. Carrega o ficheiro .env a partir da raiz do projeto (certifica-te de que o tens configurado no pubspec.yaml)
+  await dotenv.load(fileName: ".env");
+
   runApp(const TcgCompanionApp());
 }
 
