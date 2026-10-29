@@ -75,3 +75,42 @@ exports.registerUser = async (req, res) => {
     return res.status(500).json({ message: 'Erro interno ao registar utilizador.', error: error.message });
   }
 };
+
+// Efetuar Login de Utilizador
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Validação básica dos campos
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email e password são obrigatórios.' });
+    }
+
+    // 2. Procurar o utilizador na base de dados pelo email
+    const user = await User.findByEmail(email);
+    if (!user) {
+      return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
+    }
+
+    // 3. Verificar se a palavra-passe coincide 
+    // (Nota: Se guardaste a password em texto plano no registo, compara diretamente. Se usaste bcrypt, podes usar bcrypt.compare)
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
+    }
+
+    // 4. Sucesso: Retorna os dados essenciais do utilizador
+    return res.status(200).json({
+      message: 'Login efetuado com sucesso!',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        account_type: user.account_type
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro ao efetuar login:', error);
+    return res.status(500).json({ message: 'Erro interno ao efetuar login.', error: error.message });
+  }
+};

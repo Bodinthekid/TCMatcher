@@ -8,4 +8,5 @@ router.get('/', storeController.getAllStores);
 // GET /api/stores/user/:userId - Busca os dados da loja de um utilizador específico
 router.get('/user/:userId', storeController.getStoreByUserId);
 
+
 module.exports = router;
