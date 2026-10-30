@@ -16,19 +16,17 @@ class AuthController extends ChangeNotifier {
   /// [registerPlayer]
   /// Coordena o processo de registo: ativa o estado de loading, 
   /// chama o [AuthService] e trata o sucesso ou o erro resultante.
-  /// Devolve `true` se o registo for bem-sucedido e `false` caso ocorra um erro.
   Future<bool> registerPlayer({
     required String name,
     required String email,
     required String password,
   }) async {
-    _isLoading = true;      // Ativa o estado de carregamento
-    _errorMessage = null;   // Limpa erros anteriores
-    notifyListeners();      // Notifica os ouvintes (Views) para atualizarem a UI (ex: mostrar spinner)
+    _isLoading = true;      
+    _errorMessage = null;   
+    notifyListeners();      
 
     try {
-      // Tenta efetuar o registo através do serviço externo
-      await AuthService.registerPlayer(
+      await AuthService.registerPlayerAPI(
         name: name,
         email: email,
         password: password,
@@ -36,13 +34,42 @@ class AuthController extends ChangeNotifier {
       
       _isLoading = false;
       notifyListeners();
-      return true; // Sucesso na operação
+      return true; 
     } catch (e) {
       _isLoading = false;
-      // Formata a exceção removendo o prefixo técnico e guarda a mensagem de erro amigável
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
-      return false; // Falha na operação (ex: email duplicado ou falha de rede)
+      return false; 
+    }
+  }
+
+  /// [loginUser]
+  /// Coordena o processo de login de forma consistente com o registo,
+  /// gerindo o estado de loading e as mensagens de erro internamente.
+  Future<bool> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Notifica a UI para ativar o indicador de loading (se houver)
+
+    try {
+      final response = await AuthService.loginAPI(
+        email: email,
+        password: password,
+      );
+      
+      // Opcional: Podes extrair dados do utilizador se precisares (ex: response['user'])
+      
+      _isLoading = false;
+      notifyListeners();
+      return true; // Sucesso
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false; // Falha (ex: 401 Unauthorized)
     }
   }
 }
