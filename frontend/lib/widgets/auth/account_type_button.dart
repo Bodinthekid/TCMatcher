@@ -46,6 +46,7 @@ class AccountTypeButton extends StatelessWidget {
           : OutlinedButton(
               onPressed: onPressed,
               style: OutlinedButton.styleFrom(
+                backgroundColor: AppColors.primaryPurpleDark, // Cor principal roxa do tema
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: AppColors.cardBorder), // Contorno cinzento subtil
                 shape: RoundedRectangleBorder(

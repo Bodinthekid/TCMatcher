@@ -67,7 +67,7 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Player'),
+        title: const Text(''),
         centerTitle: true,
         backgroundColor: AppColors.background,
         elevation: 0,

@@ -53,7 +53,7 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Store'),
+        title: const Text(''),
         centerTitle: true,
         backgroundColor: AppColors.background,
         elevation: 0,
