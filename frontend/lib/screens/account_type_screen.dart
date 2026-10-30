@@ -17,7 +17,7 @@ class AccountTypeScreen extends StatelessWidget {
     return Scaffold(
       // Barra superior limpa com o título de registo centralizado
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text(''),
         centerTitle: true,
         backgroundColor: AppColors.background,
         elevation: 0,

@@ -53,6 +53,7 @@ class AuthButtonRow extends StatelessWidget {
       onPressed: onSecondaryTap,
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white,
+        backgroundColor: AppColors.primaryPurpleDark,
         minimumSize: const Size(120, 46),
         side: const BorderSide(color: AppColors.cardBorder),
         shape: RoundedRectangleBorder(
