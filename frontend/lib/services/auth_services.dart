@@ -7,7 +7,7 @@ class AuthService {
   static String get baseUrl => dotenv.env['API_BASE_URL'] ?? '';
 
   // Método de Registo de Jogador
-  static Future<void> registerPlayer({
+  static Future<void> registerPlayerAPI({
     required String name,
     required String email,
     required String password,
@@ -31,7 +31,7 @@ class AuthService {
   }
 
   // Novo método de Login (Apanha erros de 401 Unauthorized do backend)
-  static Future<Map<String, dynamic>> login({
+  static Future<Map<String, dynamic>> loginAPI({
     required String email,
     required String password,
   }) async {

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../theme/app_colors.dart';
-import '../services/auth_services.dart'; // 👈 Importa o teu AuthService
+import '../controllers/auth_controller.dart'; 
 import '../widgets/auth/auth_logo.dart';
 import '../widgets/auth/auth_text_field.dart';
 import '../widgets/auth/auth_button_row.dart';
 import 'account_type_screen.dart';
+import 'main_shell.dart';
 
 /// [LoginScreen]
-/// Ecrã principal de autenticação: Atua estritamente como esqueleto estrutural,
-/// orquestrando o formulário, validações, gestão de controladores e navegação.
+/// Ecrã principal de autenticação: Atua estritamente como esqueleto visual (UI),
+/// delegando a lógica de submissão e tratamento de erros para o AuthController.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,50 +19,43 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Chave global para gerir e validar o estado do formulário de login
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // Controladores para capturar os dados introduzidos nos campos de texto
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // 1. Instancia o AuthController para gerir o estado de login
+  final AuthController _authController = AuthController();
+
   @override
   void dispose() {
-    // Liberta os controladores da memória quando o ecrã é destruído para evitar fugas de recursos
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // Função responsável por validar os campos, chamar o backend e gerir o login
-  Future<void> _handleLogin() async {
+  // 2. Delega a ação de login para a instância do controlador
+  Future<void> _onLoginPressed() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        // 1. Envia as credenciais para o backend através do AuthService
-        final response = await AuthService.login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+      // Chama o método de instância loginUser do AuthController
+      bool success = await _authController.loginUser(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-        // Opcional: Podes ler o tipo de conta (PLAYER ou STORE) se precisares mais à frente
-        final accountType = response['user']['account_type'];
+      if (!mounted) return;
 
-        // 2. Se o login for bem-sucedido (200 OK), avança para o MainShell
-        if (!mounted) return;
+      if (success) {
+        // Se o login for bem-sucedido, avança para a aplicação principal
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainShell()),
         );
-
-      } catch (e) {
-        // 3. Se o backend recusar (email errado, pass incorreta, etc.), apanha o erro aqui!
-        final errorMessage = e.toString().replaceAll('Exception: ', '');
-        
-        if (!mounted) return;
+      } else {
+        // Se falhar, exibe o erro guardado no controlador através de um SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red, // Vermelho para destacar o erro
+            content: Text(_authController.errorMessage ?? 'Erro ao efetuar login.'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -84,33 +78,29 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             key: _formKey,
             child: Column(
-
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 1. Logótipo modular com ícone alternativo de cadeado
+                // 1. Logótipo modular
                 SizedBox(
-                    width: screenSize.width * 0.7,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Image.asset(
-                        'images/logo2.png',
-                        fit: BoxFit.cover,
-                      ),
-                    )
+                  width: screenSize.width * 0.7,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.asset(
+                      'images/logo2.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-
+                ),
                 const SizedBox(height: 34),
 
-                // 2. Campo de texto modular para o email com validação integrada
+                // 2. Campo de email
                 AuthTextField(
                   controller: _emailController,
                   hintText: 'Email',
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final email = value?.trim() ?? '';
-                    if (email.isEmpty) {
-                      return 'Please enter your email.';
-                    }
+                    if (email.isEmpty) return 'Please enter your email.';
                     if (!email.contains('@') || !email.contains('.')) {
                       return 'Please enter a valid email.';
                     }
@@ -119,29 +109,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 3. Campo de texto modular para a palavra-passe com ocultação de caracteres
+                // 3. Campo de password
                 AuthTextField(
                   controller: _passwordController,
                   hintText: 'Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
-                    if (password.isEmpty) {
-                      return 'Please enter your password.';
-                    }
+                    if (password.isEmpty) return 'Please enter your password.';
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
 
-                // 4. Linha de botões modulares para submeter o login ou navegar para o registo
+                // 4. Linha de botões
                 AuthButtonRow(
                   primaryFirst: true,
                   primaryLabel: 'Login',
-                  onPrimaryTap: _handleLogin,
+                  onPrimaryTap: _onLoginPressed,
                   secondaryLabel: 'Register',
                   onSecondaryTap: () {
-                    // Navega para o ecrã de seleção do tipo de conta (AccountTypeScreen)
                     Navigator.push(
                       context,
                       MaterialPageRoute(
