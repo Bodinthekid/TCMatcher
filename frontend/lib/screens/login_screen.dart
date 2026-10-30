@@ -70,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -83,11 +84,22 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             key: _formKey,
             child: Column(
+
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // 1. Logótipo modular com ícone alternativo de cadeado
-                const AuthLogo(fallbackIcon: Icons.lock_outline_rounded),
-                const SizedBox(height: 60),
+                SizedBox(
+                    width: screenSize.width * 0.7,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.asset(
+                        'images/logo2.png',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  ),
+
+                const SizedBox(height: 34),
 
                 // 2. Campo de texto modular para o email com validação integrada
                 AuthTextField(

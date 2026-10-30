@@ -20,8 +20,8 @@ class AuthLogo extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.0),
       child: Image.asset(
-        'images/logo.png',
-        cacheWidth: 500,
+        'images/logo2.png',
+        cacheWidth: 750,
         fit: BoxFit.cover,
         // [Função errorBuilder]: Executada automaticamente se o Flutter não encontrar a imagem 'images/logo.png'
         errorBuilder: (_, __, ___) => Container(
