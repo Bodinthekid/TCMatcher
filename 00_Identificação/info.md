@@ -7,8 +7,8 @@
 ## 👥 Elementos do Grupo
 * **[Matheus Reis Correia Borges]** - [20250417] 
 * **[Elmer Otchali Safeca Moreso]** - [20250922] 
-* **[Henrique Carvalho]** - [20250852] 
-* **[Samuel Longo]** - [20251469] 
+* **[Henrique Alexandre Correa Carvalho Carvalho]** - [20250852] 
+* **[Samuel Livramento Alves Longo]** - [20251469] 
 
 **Corpo Docente:**
 * **Projeto Mobile / PDM:** Prof. João Monge / Prof. Fabio Guilherme
@@ -21,7 +21,7 @@
 
 ## 📄 Documentação do Projeto
 A documentação oficial do projeto encontra-se na pasta [`/Documentos`](./Documentos/):
-* 🟢 **[Proposta Inicial (v1 - PDF)](/TCMatcher/04_Documentacao_Tecnica/g02-proposra-v1.md)** — *1ª Entrega (02/10/2026)*
+* 🟢 **[Proposta Inicial (v1 - PDF)](./TCMatcher/04_Documentacao_Tecnica/g02-proposta-v1.md)** — *1ª Entrega (02/10/2026)*
 * 🟡 **[Relatório Intermédio (PDF)](./Documentos/g01-relatorio-intermedio.pdf)** — *2ª Entrega (06/11/2026)*
 * 🔴 **[Relatório Final (PDF)](./Documentos/g01-relatorio-final.pdf)** — *3ª Entrega (11/12/2026)*
 
