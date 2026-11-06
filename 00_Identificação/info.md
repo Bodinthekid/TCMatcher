@@ -20,10 +20,10 @@
 ---
 
 ## 📄 Documentação do Projeto
-A documentação oficial do projeto encontra-se na pasta [`/Documentos`](./Documentos/):
-* 🟢 **[Proposta Inicial (v1 - PDF)](./TCMatcher/04_Documentacao_Tecnica/g02-proposta-v1.md)** — *1ª Entrega (02/10/2026)*
-* 🟡 **[Relatório Intermédio (PDF)](./Documentos/g01-relatorio-intermedio.pdf)** — *2ª Entrega (06/11/2026)*
-* 🔴 **[Relatório Final (PDF)](./Documentos/g01-relatorio-final.pdf)** — *3ª Entrega (11/12/2026)*
+A documentação oficial do projeto encontra-se na pasta [`04_Documentacao_Tecnica`](../../TCMatcher/04_Documentacao_Tecnica/):
+* 🟢 **[Proposta Inicial (v1 - PDF)](../../TCMatcher/04_Documentacao_Tecnica/g02-proposta-v1.md)** — *1ª Entrega (02/10/2026)*
+* 🟡 **[Relatório Intermédio (PDF)](../../TCMatcher/04_Documentacao_Tecnica/g02-proposta-v2.md)** — *2ª Entrega (06/11/2026)*
+* 🔴 **[Relatório Final (PDF)](../../TCMatcher/04_Documentacao_Tecnica/g02-proposta-v3.md)** — *3ª Entrega (11/12/2026)*
 
 ---
 
@@ -36,8 +36,7 @@ A documentação oficial do projeto encontra-se na pasta [`/Documentos`](./Docum
 ---
 
 ## 📁 Estrutura do Repositório
-* `/Documentos`: Ficheiros PDF das entregas e documentação principal.
-* `/Arquivo_Documental`: Arquivo histórico organizado segundo os requisitos do briefing.
-* `/frontend`: Código fonte da aplicação móvel em Flutter.
-* `/backend`: Código fonte da API REST em Node.js.
-* `/database`: Scripts de criação (`create.sql`), povoamento (`populate.sql`) e consultas (`queries.sql`).
+* [`/04_Documentacao_Tecnica`](../../TCMatcher/04_Documentacao_Tecnica/): Ficheiros PDF das entregas e documentação principal.
+* [`/05_Artefactos/Aplicacao_Movel`](../../TCMatcher/05_Artefactos/Aplicacao_Movel/): Código fonte da aplicação móvel em Flutter.
+* [`/05_Artefactos/Backend`](../../TCMatcher/05_Artefactos/Backend/): Código fonte da API REST em Node.js.
+* [`/05_Artefactos/Base_Dados`](../../TCMatcher/05_Artefactos/Base_Dados/): Scripts de criação (`create.sql`), povoamento (`populate.sql`) e consultas (`queries.sql`).
