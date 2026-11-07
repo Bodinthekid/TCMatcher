@@ -125,7 +125,7 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                 AuthTextField(
                   controller: _postalCodeController,
                   hintText: 'Postal Code (XXXX-XXX)',
-                  keyboardType: TextInputType.datetime,
+                  keyboardType: TextInputType.text,
                   validator: (value) {
                     final postalCode = value?.trim() ?? '';
                     if (postalCode.isEmpty) {
