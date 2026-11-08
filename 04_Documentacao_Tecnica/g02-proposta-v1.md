@@ -157,7 +157,7 @@ A localização exata dos utilizadores **nunca será publicamente exibida**. Em 
 
 ## Planeamento e Calendarização
 
-![](imagens/GráficodeGantt.jpeg) <br>
+![](../02_Imagens/GráficodeGantt.jpeg) <br>
 ---
 
 ## Conclusão
