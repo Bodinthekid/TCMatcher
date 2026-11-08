@@ -8,5 +8,7 @@ router.get('/', storeController.getAllStores);
 // GET /api/stores/user/:userId - Busca os dados da loja de um utilizador específico
 router.get('/user/:userId', storeController.getStoreByUserId);
 
+// 🌍 GET /api/stores/nearby - Pesquisa automática de lojas via Overpass API (OpenStreetMap)
+router.get('/nearby', storeController.getNearbyStores);
 
 module.exports = router;

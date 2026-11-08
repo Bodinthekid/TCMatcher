@@ -4,7 +4,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthService {
   // Lê diretamente do ficheiro .env atualizado pelo script update-ip.sh
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? '';
+  static String get baseUrl {
+    final url = dotenv.env['API_BASE_URL'] ?? '';
+    print('🔍 [DEBUG] baseUrl lido do .env: "$url"');
+    return url;
+  }
 
   // Método de Registo de Jogador
   static Future<void> registerPlayerAPI({
@@ -12,8 +16,11 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    final requestUrl = Uri.parse('$baseUrl/users/register');
+    print('🔗 [DEBUG] URL final de Registo: $requestUrl');
+
     final response = await http.post(
-      Uri.parse('$baseUrl/register'),
+      requestUrl,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': name,
@@ -23,6 +30,8 @@ class AuthService {
       }),
     );
 
+    print('📡 [DEBUG] Registo - Status Code: ${response.statusCode}');
+
     final data = jsonDecode(response.body);
 
     if (response.statusCode != 201) {
@@ -31,18 +40,23 @@ class AuthService {
   }
 
   // Novo método de Login (Apanha erros de 401 Unauthorized do backend)
-  static Future<Map<String, dynamic>> loginAPI({
+  static Future<dynamic> loginAPI({
     required String email,
     required String password,
   }) async {
+    final requestUrl = Uri.parse('$baseUrl/users/login');
+    print('🔗 [DEBUG] URL final de Login: $requestUrl');
+
     final response = await http.post(
-      Uri.parse('$baseUrl/login'),
+      requestUrl,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
         'password': password,
       }),
     );
+
+    print('📡 [DEBUG] Login - Status Code: ${response.statusCode}');
 
     final data = jsonDecode(response.body);
 
