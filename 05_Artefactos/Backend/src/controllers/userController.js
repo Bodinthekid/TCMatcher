@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const db = require('../config/data_base'); // para transações ou inserções adicionais
+const db = require('../config/data_base');
 
 // Listar todos os utilizadores
 exports.getUsers = async (req, res) => {
@@ -22,16 +22,22 @@ exports.registerUser = async (req, res) => {
       account_type = 'PLAYER', 
       latitude, 
       longitude,
-      // Dados adicionais caso seja Loja:
       store_name, 
       address, 
       phone, 
       opening_hours 
     } = req.body;
 
-    // 1. Validação básica
-    if (!name || !email || !password) {
+    // 1. Validação básica antes de tocar na base de dados
+    const finalName = name || store_name;
+    if (!finalName || !email || !password) {
       return res.status(400).json({ message: 'Nome, email e password são obrigatórios.' });
+    }
+
+    if (account_type === 'STORE' && (!store_name || !address)) {
+      return res.status(400).json({ 
+        message: 'Os campos nome da loja e morada são obrigatórios para contas do tipo STORE.' 
+      });
     }
 
     // 2. Verificar se o email já existe
@@ -42,27 +48,33 @@ exports.registerUser = async (req, res) => {
 
     // 3. Criar o utilizador base na tabela 'users'
     const userId = await User.create({ 
-      name, 
+      name: finalName, 
       email, 
       password, 
       account_type, 
-      latitude, 
-      longitude 
+      latitude: latitude ?? null, 
+      longitude: longitude ?? null 
     });
 
-    // 4. Se o tipo de conta for STORE, criar também o registo na tabela 'stores'
+    // 4. Criar registo na subclasse correspondente (STORE ou PLAYER)
     if (account_type === 'STORE') {
-      if (!store_name || !address) {
-        return res.status(400).json({ 
-          message: 'Utilizador criado, mas os campos store_name e address são obrigatórios para contas do tipo STORE.' 
-        });
-      }
-
       const storeSql = `
         INSERT INTO stores (user_id, store_name, address, phone, opening_hours)
         VALUES (?, ?, ?, ?, ?)
       `;
-      await db.execute(storeSql, [userId, store_name, address, phone, opening_hours]);
+      await db.execute(storeSql, [
+        userId, 
+        store_name, 
+        address, 
+        phone ?? null, 
+        opening_hours ?? null
+      ]);
+    } else if (account_type === 'PLAYER') {
+      const playerSql = `
+        INSERT INTO player_profiles (user_id)
+        VALUES (?)
+      `;
+      await db.execute(playerSql, [userId]);
     }
 
     return res.status(201).json({ 
@@ -81,24 +93,15 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Validação básica dos campos
     if (!email || !password) {
       return res.status(400).json({ message: 'Email e password são obrigatórios.' });
     }
 
-    // 2. Procurar o utilizador na base de dados pelo email
     const user = await User.findByEmail(email);
-    if (!user) {
+    if (!user || user.password !== password) {
       return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
     }
 
-    // 3. Verificar se a palavra-passe coincide 
-    // (Nota: Se guardaste a password em texto plano no registo, compara diretamente. Se usaste bcrypt, podes usar bcrypt.compare)
-    if (user.password !== password) {
-      return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
-    }
-
-    // 4. Sucesso: Retorna os dados essenciais do utilizador
     return res.status(200).json({
       message: 'Login efetuado com sucesso!',
       user: {

@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import '../services/auth_services.dart';
 
-/// [AuthController]
-/// Controlador de estado baseado em [ChangeNotifier] que gere a lógica de negócio 
-/// e o fluxo de autenticação do lado do frontend, mantendo os ecrãs limpos de código de rede.
 class AuthController extends ChangeNotifier {
-  // Estado interno para controlar se uma requisição está em curso (exibe indicadores de loading)
+  // Estado de carregamento
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // Estado interno para armazenar mensagens de erro caso a operação falhe
+  // Mensagens de erro
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  /// [registerPlayer]
-  /// Coordena o processo de registo: ativa o estado de loading, 
-  /// chama o [AuthService] e trata o sucesso ou o erro resultante.
+  // Tipo de conta autenticada
+  String? _accountType;
+  String? get accountType => _accountType;
+
+  // REGISTAR JOGADOR
   Future<bool> registerPlayer({
     required String name,
     required String email,
     required String password,
   }) async {
-    _isLoading = true;      
-    _errorMessage = null;   
-    notifyListeners();      
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
     try {
       await AuthService.registerPlayerAPI(
@@ -31,45 +30,93 @@ class AuthController extends ChangeNotifier {
         email: email,
         password: password,
       );
-      
+
       _isLoading = false;
       notifyListeners();
-      return true; 
+      return true;
     } catch (e) {
       _isLoading = false;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
-      return false; 
+      return false;
     }
   }
 
-  /// [loginUser]
-  /// Coordena o processo de login de forma consistente com o registo,
-  /// gerindo o estado de loading e as mensagens de erro internamente.
+  // REGISTAR LOJA
+  Future<bool> registerStore({
+    required String storeName,
+    required String email,
+    required String password,
+    required String address,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await AuthService.registerStoreAPI(
+        storeName: storeName,
+        email: email,
+        password: password,
+        address: address,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // LOGIN
   Future<bool> loginUser({
     required String email,
     required String password,
   }) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners(); // Notifica a UI para ativar o indicador de loading (se houver)
+    _accountType = null;
+    notifyListeners();
 
     try {
-      final response = await AuthService.loginAPI(
+      // Recebe os dados do utilizador autenticado
+      final data = await AuthService.loginAPI(
         email: email,
         password: password,
       );
-      
-      // Opcional: Podes extrair dados do utilizador se precisares (ex: response['user'])
-      
+
+      // Identifica o tipo de conta
+      final user = data['user'];
+
+      if (user is! Map) {
+        throw Exception(
+          'Resposta de autenticação inválida.',
+        );
+      }
+
+      final type = user['account_type'];
+
+      if (type != 'PLAYER' && type != 'STORE') {
+        throw Exception(
+          'Tipo de conta desconhecido.',
+        );
+      }
+
+      _accountType = type as String;
+
       _isLoading = false;
       notifyListeners();
-      return true; // Sucesso
+      return true;
     } catch (e) {
       _isLoading = false;
+      _accountType = null;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
-      return false; // Falha (ex: 401 Unauthorized)
+      return false;
     }
   }
 }
