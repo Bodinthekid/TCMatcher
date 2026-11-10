@@ -6,6 +6,8 @@
 -- CODIFICAÇÃO: UTF-8 (utf8mb4) para suporte a múltiplos carateres e emojis
 -- ============================================================================
 
+-- TODO NAO USAR O ENUM usar as tabelas simles
+
 -- Criar a base de dados do projeto se ainda não existir
 CREATE DATABASE IF NOT EXISTS tcmatcher_db
   CHARACTER SET utf8mb4
@@ -16,121 +18,143 @@ USE tcmatcher_db;
 
 -- ----------------------------------------------------------------------------
 -- 1. ENTIDADE BASE / SUPERCLASSE: users
--- CONCEITO ERM: Entidade Genérica / Herança (Supertype)
--- DESCRIÇÃO: Tabela principal de contas. Armazena credenciais e localização 
---            geográfica de todos os utilizadores (jogadores, lojas e admins).
+-- DESCRIÇÃO: Tabela principal de contas. Armazena credenciais e localização.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único e chave primária do utilizador
-    name VARCHAR(100) NOT NULL,                                  -- Nome completo do utilizador ou nome do responsável
-    email VARCHAR(150) NOT NULL UNIQUE,                          -- Endereço de e-mail único para autenticação e contacto
-    password VARCHAR(255) NOT NULL,                              -- Hash de segurança da palavra-passe de acesso
-    account_type ENUM('PLAYER', 'STORE', 'ADMIN') NOT NULL DEFAULT 'PLAYER', -- Discriminador de Subtipo (perfil de acesso)
-    latitude DECIMAL(10, 8) NULL,                                -- Coordenada de latitude geográfica para o mapa
-    longitude DECIMAL(11, 8) NULL,                               -- Coordenada de longitude geográfica para o mapa
-    visibility_radius_km DECIMAL(5, 2) DEFAULT 5.00,             -- Raio máximo em km definido pelo jogador para encontrar rivais
-    is_visible TINYINT(1) DEFAULT 1,                             -- Indicador (1/0) de estado online/visível no mapa de jogo
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP                -- Carimbo de data/hora do registo do utilizador
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    account_type ENUM('PLAYER', 'STORE', 'ADMIN') NOT NULL DEFAULT 'PLAYER',
+    latitude DECIMAL(10, 8) NULL,
+    longitude DECIMAL(11, 8) NULL,
+    visibility_radius_km DECIMAL(5, 2) DEFAULT 5.00,
+    is_visible TINYINT(1) DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
 -- 2. ENTIDADE PROMOVIDA: tcg_games
--- CONCEITO ERM: Atributo Promovido a Entidade para Garantir Consistência
 -- DESCRIÇÃO: Catálogo central dos jogos de cartas (TCGs) suportados pela app.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tcg_games (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único e chave primária do jogo
-    name VARCHAR(100) NOT NULL UNIQUE,                           -- Nome comercial do TCG (ex: 'Pokémon TCG', 'Magic')
-    description TEXT NULL                                        -- Resumo descritivo ou regras gerais do jogo
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
 -- 3. SUBCLASSE / ESPECIALIZAÇÃO 1: player_profiles
--- CONCEITO ERM: Herança / Subtype (Especialização do 'users' do tipo PLAYER)
 -- DESCRIÇÃO: Extensão 1:1 da tabela users contendo dados específicos do jogador.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS player_profiles (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único da ficha de perfil
-    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira e relação 1:1 com a Superclasse users
-    experience_level ENUM('BEGINNER', 'CASUAL', 'COMPETITIVE') DEFAULT 'CASUAL', -- Nível de habilidade do jogador
-    bio TEXT NULL,                                              -- Biografia ou apresentação curta exibida no perfil público
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    experience_level ENUM('BEGINNER', 'CASUAL', 'COMPETITIVE') DEFAULT 'CASUAL',
+    bio TEXT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Apaga/atualiza o perfil se o utilizador for removido/alterado
+        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
 -- 4. TABELA DE LIGAÇÃO (DECOMPOSIÇÃO N:M): player_games
--- CONCEITO ERM: Decomposição da Relação Muitos-para-Muitos (users <-> tcg_games)
 -- DESCRIÇÃO: Associa quais TCGs cada jogador pratica ou tem interesse.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS player_games (
-    user_id INT NOT NULL,                                        -- Chave estrangeira que referencia o jogador
-    game_id INT NOT NULL,                                        -- Chave estrangeira que referencia o jogo TCG
-    PRIMARY KEY (user_id, game_id),                             -- Chave primária composta para impedir registos duplicados
+    user_id INT NOT NULL,
+    game_id INT NOT NULL,
+    PRIMARY KEY (user_id, game_id),
     FOREIGN KEY (user_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Elimina a associação caso o jogador seja apagado
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (game_id) REFERENCES tcg_games(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Elimina a associação caso o TCG seja apagado
+        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 5. SUBCLASSE / ESPECIALIZAÇÃO 2: stores
--- CONCEITO ERM: Herança / Subtype (Especialização do 'users' do tipo STORE)
--- DESCRIÇÃO: Extensão 1:1 da tabela users para contas do tipo STORE.
+-- 5. ENTIDADE DO MAPA (OSM): stores_map
+-- DESCRIÇÃO: Guarda os dados geográficos globais importados da API Overpass.
+-- (Colocada aqui antes de 'stores' para respeitar a dependência da Chave Estrangeira)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS stores_map (
+    id VARCHAR(100) PRIMARY KEY,             -- Ex: "node/12345678" ou "way/87654321"
+    country VARCHAR(50) NOT NULL,            -- Ex: "Portugal", "Spain"
+    element_type VARCHAR(20),                -- Ex: "node", "way", "relation"
+    name VARCHAR(255) NOT NULL,              -- Store name
+    city VARCHAR(100),                       -- City / Locality
+    address VARCHAR(255),                    -- Street and house number combined
+    postal_code VARCHAR(20),                 -- Postal code / Zip code
+    phone VARCHAR(50),                       -- Contact phone number
+    website VARCHAR(255),                    -- Official website URL
+    opening_hours VARCHAR(255),              -- Business hours / Schedule
+    lat DECIMAL(10, 8) NOT NULL,             -- Latitude coordinate
+    lon DECIMAL(11, 8) NOT NULL              -- Longitude coordinate
+) ENGINE=InnoDB;
+
+-- Índice para otimizar pesquisas por país no mapa
+CREATE INDEX idx_stores_country ON stores_map(country);
+
+-- ----------------------------------------------------------------------------
+-- 6. SUBCLASSE / ESPECIALIZAÇÃO 2: stores
+-- DESCRIÇÃO: Extensão 1:1 da tabela users para contas do tipo STORE, 
+--            ligada opcionalmente ao mapa global através de 'store_map_id'.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS stores (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único da loja física
-    user_id INT NOT NULL UNIQUE,                                 -- Chave estrangeira e relação 1:1 com a Superclasse users
-    store_name VARCHAR(150) NOT NULL,                            -- Nome comercial ou público do estabelecimento
-    address VARCHAR(255) NOT NULL,                               -- Endereço físico completo da loja
-    phone VARCHAR(20) NULL,                                      -- Número de contacto telefónico da loja
-    opening_hours VARCHAR(100) NULL,                             -- Descrição dos horários e dias de abertura
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    store_map_id VARCHAR(100) NULL,
+    store_name VARCHAR(150) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NULL,
+    opening_hours VARCHAR(100) NULL,
+    status VARCHAR(50) DEFAULT 'pending',
     FOREIGN KEY (user_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Apaga a loja se a conta de utilizador for removida
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (store_map_id) REFERENCES stores_map(id) 
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- Índice para acelerar a busca de lojas parceiras associadas ao mapa
+CREATE INDEX idx_stores_map_id ON stores(store_map_id);
+
 -- ----------------------------------------------------------------------------
--- 6. ENTIDADE: tournaments
--- CONCEITO ERM: Relações 1:N entre 'stores' e 'tcg_games'
+-- 7. ENTIDADE: tournaments
 -- DESCRIÇÃO: Regista os torneios e eventos organizados pelas lojas.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tournaments (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único e chave primária do evento/torneio
-    store_id INT NOT NULL,                                       -- Chave estrangeira da loja organizadora
-    game_id INT NOT NULL,                                        -- Chave estrangeira do TCG específico do evento
-    title VARCHAR(150) NOT NULL,                                 -- Título público do torneio (ex: 'Friday Night Magic')
-    description TEXT NULL,                                        -- Detalhes sobre o evento, prémios ou formato
-    start_time DATETIME NOT NULL,                                -- Data e hora marcadas para o arranque do torneio
-    end_time DATETIME NULL,                                      -- Data e hora previstas para o encerramento do evento
-    max_slots INT DEFAULT 16,                                    -- Lotação máxima do número de participantes
-    entry_fee DECIMAL(8, 2) DEFAULT 0.00,                        -- Custo do valor de entrada/taxa de inscrição em Euros
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    store_id INT NOT NULL,
+    game_id INT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    description TEXT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NULL,
+    max_slots INT DEFAULT 16,
+    entry_fee DECIMAL(8, 2) DEFAULT 0.00,
     FOREIGN KEY (store_id) REFERENCES stores(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Apaga os eventos se a loja for removida
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (game_id) REFERENCES tcg_games(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Apaga os eventos se o TCG associado for removido
+        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 7. TABELA DE LIGAÇÃO (DECOMPOSIÇÃO N:M): tournament_registrations
--- CONCEITO ERM: Decomposição da Relação Muitos-para-Muitos (users <-> tournaments)
+-- 8. TABELA DE LIGAÇÃO (DECOMPOSIÇÃO N:M): tournament_registrations
 -- DESCRIÇÃO: Controla inscritos e o check-in presencial no evento.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tournament_registrations (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único do comprovativo de inscrição
-    tournament_id INT NOT NULL,                                  -- Chave estrangeira do evento/torneio
-    user_id INT NOT NULL,                                        -- Chave estrangeira do jogador inscrito
-    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP,            -- Carimbo de data/hora em que a inscrição foi efetuada
-    is_checked_in TINYINT(1) DEFAULT 0,                          -- Indicador (1/0) de validação de presença (check-in) na loja
-    CONSTRAINT uq_tournament_user UNIQUE (tournament_id, user_id), -- Impede que um jogador se inscreva duas vezes no mesmo evento
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tournament_id INT NOT NULL,
+    user_id INT NOT NULL,
+    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_checked_in TINYINT(1) DEFAULT 0,
+    CONSTRAINT uq_tournament_user UNIQUE (tournament_id, user_id),
     FOREIGN KEY (tournament_id) REFERENCES tournaments(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Elimina a inscrição se o evento for cancelado/apagado
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Elimina a inscrição se o jogador apagar a conta
+        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 8. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): matches
--- CONCEITO ERM: Auto-Relacionamento N:M na própria Entidade 'users'
+-- 9. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): matches
 -- DESCRIÇÃO: Guarda o registo das partidas disputadas entre dois jogadores.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS matches (
@@ -151,19 +175,18 @@ CREATE TABLE IF NOT EXISTS matches (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- 9. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): chat_messages
--- CONCEITO ERM: Auto-Relacionamento 1:N / N:M na própria Entidade 'users'
+-- 10. AUTO-RELACIONAMENTO (SELF-RELATIONSHIP): chat_messages
 -- DESCRIÇÃO: Regista as mensagens trocadas no chat direto entre utilizadores.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS chat_messages (
-    id INT AUTO_INCREMENT PRIMARY KEY,                           -- Identificador único e chave primária de cada mensagem
-    sender_id INT NOT NULL,                                      -- Chave estrangeira do utilizador que enviou a mensagem
-    receiver_id INT NOT NULL,                                    -- Chave estrangeira do utilizador que recebe a mensagem
-    content TEXT NOT NULL,                                       -- Conteúdo textual da mensagem trocada
-    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Carimbo de data e hora do envio da mensagem
-    is_read TINYINT(1) DEFAULT 0,                                -- Estado de leitura da mensagem (0 = Não Lida, 1 = Lida)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_read TINYINT(1) DEFAULT 0,
     FOREIGN KEY (sender_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,                     -- Apaga a mensagem se a conta do emissor for removida
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE                      -- Apaga a mensagem se a conta do recetor for removida
+        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
