@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../widgets/auth/auth_logo.dart';         // Importação modular do logótipo
-import '../widgets/auth/auth_text_field.dart';  // Importação modular dos campos de texto
-import '../widgets/auth/auth_button_row.dart';  // Importação modular da linha de botões
+import '../controllers/auth_controller.dart';
+import '../widgets/auth/auth_logo.dart';
+import '../widgets/auth/auth_text_field.dart';
+import '../widgets/auth/auth_button_row.dart';
 import 'login_screen.dart';
 
-/// [RegisterStoreScreen]
-/// Ecrã responsável por gerir o fluxo de registo de novas lojas TCG na plataforma.
-/// Orquestra o formulário estendido (com email, password, código postal e morada),
-/// as respetivas validações e a navegação para o ecrã de login após o sucesso.
 class RegisterStoreScreen extends StatefulWidget {
   const RegisterStoreScreen({super.key});
 
@@ -17,34 +14,58 @@ class RegisterStoreScreen extends StatefulWidget {
 }
 
 class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
-  // Chave global para controlar e validar o estado do formulário de registo da loja
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Controladores para recolher os dados introduzidos nos múltiplos campos de texto
+  final TextEditingController _storeNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
+  final AuthController _authController = AuthController();
+
   @override
   void dispose() {
-    // Liberta todos os controladores da memória quando o ecrã é destruído para evitar fugas de recursos
+    _storeNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _postalCodeController.dispose();
     _addressController.dispose();
+    _authController.dispose();
     super.dispose();
   }
 
-  // Função responsável por validar o formulário e redirecionar o utilizador para o ecrã de login
-  void _handleRegister() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final fullAddress = '${_addressController.text.trim()}, ${_postalCodeController.text.trim()}';
+
+    final success = await _authController.registerStore(
+      storeName: _storeNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      address: fullAddress,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta de loja criada com sucesso!')),
+      );
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false, // Remove todas as rotas anteriores da pilha de navegação
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage ?? 'Erro ao registar loja.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -66,20 +87,28 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 1. Logótipo modular com ícone alusivo a estabelecimentos/lojas comerciais
                 const AuthLogo(fallbackIcon: Icons.storefront_rounded),
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
 
-                // 2. Campo modular para o email da loja
+                AuthTextField(
+                  controller: _storeNameController,
+                  hintText: 'Store Name',
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter the store name.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
                 AuthTextField(
                   controller: _emailController,
                   hintText: 'Email',
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final email = value?.trim() ?? '';
-                    if (email.isEmpty) {
-                      return 'Please enter your email.';
-                    }
+                    if (email.isEmpty) return 'Please enter your email.';
                     if (!email.contains('@') || !email.contains('.')) {
                       return 'Please enter a valid email.';
                     }
@@ -88,31 +117,25 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 3. Campo modular para a palavra-passe
                 AuthTextField(
                   controller: _passwordController,
                   hintText: 'Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
-                    if (password.isEmpty) {
-                      return 'Please enter a password.';
-                    }
+                    if (password.isEmpty) return 'Please enter a password.';
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
 
-                // 4. Campo modular para confirmação da palavra-passe
                 AuthTextField(
                   controller: _confirmPasswordController,
                   hintText: 'Confirm Password',
                   obscureText: true,
                   validator: (value) {
                     final password = value?.trim() ?? '';
-                    if (password.isEmpty) {
-                      return 'Please confirm your password.';
-                    }
+                    if (password.isEmpty) return 'Please confirm your password.';
                     if (password != _passwordController.text.trim()) {
                       return 'Passwords do not match.';
                     }
@@ -121,16 +144,13 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 5. Campo modular para o Código Postal (com validação de Regex XXXX-XXX)
                 AuthTextField(
                   controller: _postalCodeController,
                   hintText: 'Postal Code (XXXX-XXX)',
                   keyboardType: TextInputType.text,
                   validator: (value) {
                     final postalCode = value?.trim() ?? '';
-                    if (postalCode.isEmpty) {
-                      return 'Please enter the postal code.';
-                    }
+                    if (postalCode.isEmpty) return 'Please enter the postal code.';
                     final regex = RegExp(r'^\d{4}-\d{3}$');
                     if (!regex.hasMatch(postalCode)) {
                       return 'Please enter a valid postal code (e.g., 1000-001).';
@@ -140,28 +160,31 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 6. Campo modular para a Morada física da loja
                 AuthTextField(
                   controller: _addressController,
                   hintText: 'Address',
                   keyboardType: TextInputType.streetAddress,
                   validator: (value) {
                     final address = value?.trim() ?? '';
-                    if (address.isEmpty) {
-                      return 'Please enter the store address.';
-                    }
+                    if (address.isEmpty) return 'Please enter the store address.';
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
 
-                // 7. Linha modular de botões de ação (Voltar atrás e Concluir Registo)
-                AuthButtonRow(
-                  secondaryLabel: 'Back',
-                  onSecondaryTap: () => Navigator.pop(context),
-                  primaryLabel: 'Register',
-                  onPrimaryTap: _handleRegister,
-                  primaryFirst: false,
+                AnimatedBuilder(
+                  animation: _authController,
+                  builder: (context, _) {
+                    return _authController.isLoading
+                        ? const CircularProgressIndicator(color: AppColors.primaryPurple)
+                        : AuthButtonRow(
+                            secondaryLabel: 'Back',
+                            onSecondaryTap: () => Navigator.pop(context),
+                            primaryLabel: 'Register',
+                            onPrimaryTap: _handleRegister,
+                            primaryFirst: false,
+                          );
+                  },
                 ),
               ],
             ),
