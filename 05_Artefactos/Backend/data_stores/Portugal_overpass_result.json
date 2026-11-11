@@ -1,0 +1,247 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-08T12:06:20Z",
+    "timestamp_areas_base": "2026-11-08T08:46:05Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 3157916877,
+      "lat": 38.7380907,
+      "lon": -9.149962,
+      "tags": {
+        "addr:city": "Lisboa",
+        "addr:housenumber": "83",
+        "addr:postcode": "1050-154",
+        "addr:street": "Avenida Marquês de Tomar",
+        "name": "Games of the West",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5409941143,
+      "lat": 38.7345612,
+      "lon": -9.1508225,
+      "tags": {
+        "addr:city": "Lisboa",
+        "addr:housenumber": "78C",
+        "addr:postcode": "1050-180",
+        "addr:street": "Rua Pinheiro Chagas",
+        "email": "shop@kultgames.pt",
+        "name": "Kult Games",
+        "phone": "+351 21 355 5499",
+        "shop": "games",
+        "website": "https://www.kultgames.pt"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6809931905,
+      "lat": 41.1532721,
+      "lon": -8.6048574,
+      "tags": {
+        "addr:housenumber": "801",
+        "addr:street": "Rua de Santa Catarina",
+        "check_date": "2023-03-25",
+        "contact:phone": "+351 224 952 011",
+        "contact:website": "https://arenaporto.com",
+        "email": "arenaporto.loja@gmail.com",
+        "internet_access": "wlan",
+        "internet_access:fee": "customers",
+        "name": "Arena Porto",
+        "opening_hours": "Mo-Fr,Su,PH 14:00-20:00; Sa 10:00-20:00",
+        "payment:credit_cards": "yes",
+        "second_hand": "yes",
+        "shop": "games",
+        "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8691147199,
+      "lat": 38.7869961,
+      "lon": -9.3220494,
+      "tags": {
+        "addr:city": "Rio de Mouro - Rinchoa",
+        "addr:street": "Calçada da Rinchoa",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11031975937,
+      "lat": 38.526901,
+      "lon": -8.8856998,
+      "tags": {
+        "email": "geral@triplacegames.com",
+        "name": "Triplace Games",
+        "opening_hours": "Mo-Sa 15:00-20:00",
+        "shop": "games",
+        "website": "https://www.triplacegames.com/en"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11905168112,
+      "lat": 38.6600592,
+      "lon": -9.0803888,
+      "tags": {
+        "name": "Ventura Games",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12204932346,
+      "lat": 38.7533355,
+      "lon": -9.2335538,
+      "tags": {
+        "name": "Duelis de Honra",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12294430308,
+      "lat": 38.7454883,
+      "lon": -9.146371,
+      "tags": {
+        "addr:city": "Lisboa",
+        "addr:housenumber": "6A",
+        "addr:place": "Rua de Entrecampos",
+        "addr:postcode": "1700-421",
+        "addr:street": "Rua Visconde de Seabra",
+        "name": "Kemushi - Lojas Arena",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12320207847,
+      "lat": 38.752831,
+      "lon": -9.2079241,
+      "tags": {
+        "name": "Gameplay Boardgames",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13335648462,
+      "lat": 41.1298803,
+      "lon": -8.5614495,
+      "tags": {
+        "addr:city": "Gondomar (São Cosme), Valbom e Jovim",
+        "addr:housenumber": "20",
+        "addr:street": "Rua da Barrosa",
+        "amenity": "bar",
+        "name": "A Toca",
+        "opening_hours": "Tu 20:00-00:00; Fr 20:00-00:00; Sa 20:00-30:00",
+        "payment:credit_cards": "yes",
+        "second_hand": "yes",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 14094181978,
+      "lat": 39.8138884,
+      "lon": -7.4826285,
+      "tags": {
+        "name": "Monster Trainer",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "node",
+      "id": 14094805743,
+      "lat": 41.2986514,
+      "lon": -7.7481227,
+      "tags": {
+        "addr:city": "Vila Real",
+        "addr:housenumber": "62",
+        "addr:postcode": "5000-539",
+        "addr:street": "Rua Dom António Valente da Fonseca",
+        "email": "geckogamesvr@outlook.com",
+        "mobile": "+351 913 839 623",
+        "name": "Gecko Game Store & Café",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1012125454,
+      "center": {
+        "lat": 41.0639692,
+        "lon": -8.5704356
+      },
+      "nodes": [
+        9337688868,
+        9337688869,
+        9337688870,
+        9337688871,
+        9337688867,
+        9337688868
+      ],
+      "tags": {
+        "building": "yes",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1057242991,
+      "center": {
+        "lat": 38.7673987,
+        "lon": -9.0969151
+      },
+      "nodes": [
+        9714410209,
+        9714410210,
+        9714410207,
+        9714410208,
+        9714410209
+      ],
+      "tags": {
+        "check_date": "2025-05-29",
+        "indoor": "room",
+        "level": "-2",
+        "level:ref": "0",
+        "name": "O Papagaio Sem Penas",
+        "shop": "games"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1464187029,
+      "center": {
+        "lat": 40.1941349,
+        "lon": -8.4085418
+      },
+      "nodes": [
+        8869001853,
+        13430916127,
+        13430916130,
+        13430916129,
+        8869001853
+      ],
+      "tags": {
+        "contact:facebook": "diverfc",
+        "contact:instagram": "divercentro",
+        "email": "diver@diver.pt",
+        "indoor": "room",
+        "level": "1",
+        "name": "Diver",
+        "opening_hours": "Mo-Su 10:00-22:00",
+        "phone": "+351 239 049 610;+351 962 872 378",
+        "shop": "games",
+        "website": "https://www.diver.pt",
+        "wheelchair": "yes"
+      }
+    }
+  ]
+}

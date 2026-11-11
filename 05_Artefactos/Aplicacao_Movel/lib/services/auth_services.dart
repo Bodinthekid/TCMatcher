@@ -7,57 +7,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AuthService {
   // ENDEREÇO DA API
   static String get baseUrl {
-    final rawUrl = (dotenv.env['API_BASE_URL'] ??
-            'http://10.0.2.2:3000/api/users')
-        .trim()
-        .replaceAll(RegExp(r'/+$'), '');
+    final url = (dotenv.env['API_BASE_URL'] ??
+            'http://10.0.2.2:3000/api');
+          print('🔍 [DEBUG] baseUrl lido do .env: "$url"');
+        return url;
 
-    if (rawUrl.endsWith('/api/users')) {
-      return rawUrl;
-    }
-
-    if (rawUrl.endsWith('/api')) {
-      return '$rawUrl/users';
-    }
-
-    return '$rawUrl/api/users';
   }
 
-  // TRATAMENTO DAS RESPOSTAS
-  static Map<String, dynamic> _parseResponse(
-    http.Response response,
-    int expectedStatus,
-    String defaultError,
-  ) {
-    dynamic data;
-
-    try {
-      data = jsonDecode(response.body);
-    } on FormatException {
-      throw Exception(
-        'Resposta inválida do servidor '
-        '(HTTP ${response.statusCode}).',
-      );
-    }
-
-    if (response.statusCode != expectedStatus) {
-      final message = data is Map ? data['message'] : null;
-
-      throw Exception(
-        message is String && message.isNotEmpty
-            ? message
-            : defaultError,
-      );
-    }
-
-    if (data is! Map<String, dynamic>) {
-      throw Exception(
-        'Formato de resposta inesperado do servidor.',
-      );
-    }
-
-    return data;
-  }
+  
 
   // PEDIDOS HTTP
   static Future<http.Response> _post(
@@ -99,21 +56,27 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final response = await _post(
-      'register',
-      {
+    final requestUrl = Uri.parse('$baseUrl/users/register');
+    print('🔗 [DEBUG] URL final de Registo: $requestUrl');
+
+    final response = await http.post(
+      requestUrl,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'name': name,
         'email': email,
         'password': password,
         'account_type': 'PLAYER',
       },
-    );
+    ));
 
-    _parseResponse(
-      response,
-      201,
-      'Erro ao registar jogador.',
-    );
+    print('📡 [DEBUG] Registo - Status Code: ${response.statusCode}');
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 201) {
+      throw Exception(data['message'] ?? 'Erro ao registar utilizador.');
+    }
   }
 
   // REGISTAR LOJA
@@ -126,7 +89,7 @@ class AuthService {
     String? openingHours,
   }) async {
     final response = await _post(
-      'register',
+      'users/register',
       {
         'name': storeName,
         'store_name': storeName,
@@ -139,30 +102,36 @@ class AuthService {
       },
     );
 
-    _parseResponse(
-      response,
-      201,
-      'Erro ao registar loja.',
-    );
   }
-
-  // LOGIN
-  static Future<Map<String, dynamic>> loginAPI({
+  
+  // Novo método de Login (Apanha erros de 401 Unauthorized do backend)
+  static Future<dynamic> loginAPI({
     required String email,
     required String password,
   }) async {
-    final response = await _post(
-      'login',
-      {
+    final requestUrl = Uri.parse('$baseUrl/users/login');
+    print('🔗 [DEBUG] URL final de Login: $requestUrl');
+
+    final response = await http.post(
+      requestUrl,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'email': email,
         'password': password,
-      },
+      }),
     );
 
-    return _parseResponse(
-      response,
-      200,
-      'Email ou palavra-passe incorretos.',
-    );
+    print('📡 [DEBUG] Login - Status Code: ${response.statusCode}');
+
+    final data = jsonDecode(response.body);
+
+    // Se o backend recusar (ex: email não existe ou password errada)
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? 'Email ou palavra-passe incorretos.');
+    }
+
+    // Retorna os dados do utilizador (incluindo o account_type: PLAYER ou STORE)
+    return data;
   }
 }
+ 
