@@ -49,17 +49,30 @@ class _TournamentDetailsModalState extends State<TournamentDetailsModal> {
 
   Future<void> _joinTournament() async {
     setState(() => _isLoading = true);
+    
+    // O TournamentController.joinTournament deve lançar a exceção com a mensagem do backend
     final success = await TournamentController.joinTournament(
       widget.tournament['id'], 
       widget.currentUserId,
     );
+    
     setState(() => _isLoading = false);
 
     if (mounted) {
       Navigator.pop(context);
+      
+      // Se falhou, podes tentar obter a mensagem de erro ou mostrar uma mensagem genérica/específica
+      String message = success 
+          ? 'Successfully joined the tournament!' 
+          : 'You are already registered for this tournament.';
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(success ? 'Successfully joined the tournament!' : 'Failed to join tournament.')),
+        SnackBar(
+          content: Text(message),
+          backgroundColor: success ? Colors.green : Colors.orangeAccent, // Laranja para avisos/duplicados
+        ),
       );
+
       if (success) widget.onChanged();
     }
   }

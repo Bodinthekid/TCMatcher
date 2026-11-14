@@ -123,7 +123,7 @@ exports.deleteTournament = async (req, res) => {
   }
 };
 
-// 🤝 Juntar-se a um torneio
+// Juntar-se a um torneio
 exports.joinTournament = async (req, res) => {
   try {
     const { id } = req.params; // tournament ID
@@ -142,6 +142,15 @@ exports.joinTournament = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Inscrição efetuada com sucesso!' });
   } catch (error) {
     console.error('Erro ao juntar-se ao torneio:', error);
+
+    // 🔑 Captura o erro de entrada duplicada do MySQL (ER_DUP_ENTRY / código 1062)
+    if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You are already registered for this tournament.' 
+      });
+    }
+
     return res.status(500).json({ success: false, message: 'Erro interno ao processar inscrição.', error: error.message });
   }
 };
