@@ -13,10 +13,12 @@ app.use(cors());         // Permite requisições do frontend (Flutter)
 // Importar rotas
 const userRoutes = require('./src/routes/userRoutes');
 const storeRoutes = require('./src/routes/storeRoutes');
+const tournamentRoutes = require('./src/routes/tournamentRoutes');
 
 // Registar rotas na aplicação
 app.use('/api/users', userRoutes);
 app.use('/api/stores', storeRoutes);
+app.use('/api/tournaments', tournamentRoutes);
 
 // Rota de teste básica para verificar se o servidor está vivo
 app.get('/', (req, res) => {

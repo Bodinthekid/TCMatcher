@@ -99,7 +99,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             title: 'Friday\nNight\nCommander',
             storeDetails: 'Twenty Sided\nStore · 7 PM',
             seatsLeft: '6 seats left',
-            imageUrl: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=400&q=80',
+            gameId: 1,
           ),
         ],
       ),

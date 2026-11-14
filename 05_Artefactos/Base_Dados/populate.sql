@@ -30,3 +30,10 @@ INSERT INTO stores (user_id, store_name, address, phone, opening_hours) VALUES
 (7, 'Arena TCG Porto', 'Rua de Camões, 123, Porto', '+351 220 000 000', '10:00 - 19:00'),
 (8, 'Magic Center Lisboa', 'Avenida da Liberdade, 100, Lisboa', '+351 210 111 222', '09:30 - 20:00'),
 (9, 'Coimbra Card Haven', 'Praça da República, 45, Coimbra', '+351 239 333 444', '10:00 - 18:30');
+
+INSERT INTO tcg_games (id, name, description) VALUES
+  (1, 'Magic: The Gathering', 'The gathering trading card game'),
+  (2, 'Pokémon', 'Pokémon TCG'),
+  (3, 'One Piece', 'One Piece Card Game'),
+  (4, 'Yu-Gi-Oh!', 'Yu-Gi-Oh! Trading Card Game')
+ON DUPLICATE KEY UPDATE name = name;

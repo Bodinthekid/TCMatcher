@@ -150,8 +150,6 @@ CREATE INDEX idx_stores_map_id ON stores(store_map_id);
 
 -- ----------------------------------------------------------------------------
 -- 7. ENTIDADE: tournaments
--- DESCRIÇÃO: Torneios oficiais (criados por lojas) e casuais (criados por
---            jogadores). O organizador é sempre um utilizador.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tournaments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -160,13 +158,15 @@ CREATE TABLE IF NOT EXISTS tournaments (
     game_id INT NOT NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
-    location_name VARCHAR(150) NULL,         -- local do torneio (casuais)
+    location_name VARCHAR(150) NULL,        -- local do torneio (casuais)
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NULL,
     max_slots INT DEFAULT 16,
     entry_fee DECIMAL(8, 2) DEFAULT 0.00,
+    is_private TINYINT(1) DEFAULT 0,
+    invite_token VARCHAR(64) UNIQUE NULL,
     FOREIGN KEY (organizer_id) REFERENCES users(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (type_id) REFERENCES tournament_types(id)
@@ -192,6 +192,19 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- 8.1. TABELA DE PARTICIPANTES (Utilizada pelo backend para o Join)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tournament_participants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tournament_id INT NOT NULL,
+    user_id INT NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_participation UNIQUE (tournament_id, user_id),
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
