@@ -110,21 +110,17 @@ exports.claimStore = async (req, res) => {
       return res.status(400).json({ message: 'Esta loja já foi reivindicada por outro utilizador.' });
     }
 
-    // 3. Inserir o registo na tabela stores oficial
+    // 3. Inserir o registo na tabela stores oficial usando o Model Store
     const data = mapStore[0];
-    const insertQuery = `
-      INSERT INTO stores (user_id, store_map_id, store_name, address, phone, opening_hours)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    await db.execute(insertQuery, [
-      userId,
-      storeMapId,
-      data.name,
-      data.address || 'Morada não especificada',
-      phone || data.phone,
-      openingHours || data.opening_hours
-    ]);
+    await Store.create({
+      user_id: userId,
+      store_map_id: storeMapId,
+      store_name: data.name,
+      address: data.address || 'Morada não especificada',
+      phone: phone || data.phone,
+      opening_hours: openingHours || data.opening_hours,
+      status: 'approved' // ou 'pending', conforme a tua regra de negócio para lojas reivindicadas
+    });
 
     return res.status(201).json({
       success: true,
