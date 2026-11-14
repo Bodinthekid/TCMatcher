@@ -14,6 +14,10 @@ class AuthController extends ChangeNotifier {
   String? _accountType;
   String? get accountType => _accountType;
 
+  // LINHAS PARA GUARDAR O ID DO UTILIZADOR
+  static int? _currentUserId;
+  static int? get currentUserId => _currentUserId;
+
   // REGISTAR JOGADOR
   Future<bool> registerPlayer({
     required String name,
@@ -80,33 +84,32 @@ class AuthController extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _accountType = null;
+    _currentUserId = null; // Limpa anterior
     notifyListeners();
 
     try {
-      // Recebe os dados do utilizador autenticado
       final data = await AuthService.loginAPI(
         email: email,
         password: password,
       );
 
-      // Identifica o tipo de conta
       final user = data['user'];
 
       if (user is! Map) {
-        throw Exception(
-          'Resposta de autenticação inválida.',
-        );
+        throw Exception('Resposta de autenticação inválida.');
       }
 
       final type = user['account_type'];
 
       if (type != 'PLAYER' && type != 'STORE') {
-        throw Exception(
-          'Tipo de conta desconhecido.',
-        );
+        throw Exception('Tipo de conta desconhecido.');
       }
 
       _accountType = type as String;
+
+      // 🔑 EXTRAI E GUARDA O ID DO UTILIZADOR (converte para int de forma segura)
+      final rawId = user['id'];
+      _currentUserId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
 
       _isLoading = false;
       notifyListeners();
@@ -114,6 +117,7 @@ class AuthController extends ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       _accountType = null;
+      _currentUserId = null;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
