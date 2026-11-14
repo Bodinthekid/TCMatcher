@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const db = require('../config/data_base');
+const db = require('../config/data_base'); // para transações ou inserções adicionais
 
 // Listar todos os utilizadores
 exports.getUsers = async (req, res) => {
@@ -22,22 +22,16 @@ exports.registerUser = async (req, res) => {
       account_type = 'PLAYER', 
       latitude, 
       longitude,
+      // Dados adicionais caso seja Loja:
       store_name, 
       address, 
       phone, 
       opening_hours 
     } = req.body;
 
-    // 1. Validação básica antes de tocar na base de dados
-    const finalName = name || store_name;
-    if (!finalName || !email || !password) {
+    // 1. Validação básica
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'Nome, email e password são obrigatórios.' });
-    }
-
-    if (account_type === 'STORE' && (!store_name || !address)) {
-      return res.status(400).json({ 
-        message: 'Os campos nome da loja e morada são obrigatórios para contas do tipo STORE.' 
-      });
     }
 
     // 2. Verificar se o email já existe
@@ -46,35 +40,38 @@ exports.registerUser = async (req, res) => {
       return res.status(409).json({ message: 'Este email já está registado.' });
     }
 
-    // 3. Criar o utilizador base na tabela 'users'
+    // 3. Mapear o tipo de conta (string) para o respetivo ID da tabela de referência
+    // 1 = PLAYER, 2 = STORE, 3 = ADMIN
+    let account_type_id = 1; // Padrão: PLAYER
+    if (account_type === 'STORE') {
+      account_type_id = 2;
+    } else if (account_type === 'ADMIN') {
+      account_type_id = 3;
+    }
+
+    // 4. Criar o utilizador base na tabela 'users' usando account_type_id
     const userId = await User.create({ 
-      name: finalName, 
+      name, 
       email, 
       password, 
-      account_type, 
-      latitude: latitude ?? null, 
-      longitude: longitude ?? null 
+      account_type_id, 
+      latitude, 
+      longitude 
     });
 
-    // 4. Criar registo na subclasse correspondente (STORE ou PLAYER)
-    if (account_type === 'STORE') {
+    // 5. Se o tipo de conta for STORE (id = 2), criar também o registo na tabela 'stores'
+    if (account_type_id === 2) {
+      if (!store_name || !address) {
+        return res.status(400).json({ 
+          message: 'Utilizador criado, mas os campos store_name e address são obrigatórios para contas do tipo STORE.' 
+        });
+      }
+
       const storeSql = `
         INSERT INTO stores (user_id, store_name, address, phone, opening_hours)
         VALUES (?, ?, ?, ?, ?)
       `;
-      await db.execute(storeSql, [
-        userId, 
-        store_name, 
-        address, 
-        phone ?? null, 
-        opening_hours ?? null
-      ]);
-    } else if (account_type === 'PLAYER') {
-      const playerSql = `
-        INSERT INTO player_profiles (user_id)
-        VALUES (?)
-      `;
-      await db.execute(playerSql, [userId]);
+      await db.execute(storeSql, [userId, store_name, address, phone, opening_hours]);
     }
 
     return res.status(201).json({ 
@@ -93,22 +90,30 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // 1. Validação básica dos campos
     if (!email || !password) {
       return res.status(400).json({ message: 'Email e password são obrigatórios.' });
     }
 
+    // 2. Procurar o utilizador na base de dados pelo email
     const user = await User.findByEmail(email);
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
     }
 
+    // 3. Verificar se a palavra-passe coincide
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'Email ou palavra-passe incorretos.' });
+    }
+
+    // 4. Sucesso: Retorna os dados essenciais do utilizador
     return res.status(200).json({
       message: 'Login efetuado com sucesso!',
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        account_type: user.account_type
+        account_type: user.account_type // Vem já mapeado como 'PLAYER' ou 'STORE' graças ao JOIN no User.findByEmail
       }
     });
 

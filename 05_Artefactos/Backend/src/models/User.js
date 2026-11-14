@@ -1,19 +1,18 @@
 const db = require('../config/data_base');
 
 class User {
-  // Criar uma nova conta de utilizador (Jogador ou Loja) com tratamento para valores opcionais/nulos
-  static async create({ name, email, password, account_type = 'PLAYER', latitude, longitude }) {
+  // Criar uma nova conta de utilizador usando account_type_id (por defeito 1 = PLAYER)
+  static async create({ name, email, password, account_type_id = 1, latitude, longitude }) {
     const sql = `
-      INSERT INTO users (name, email, password, account_type, latitude, longitude)
+      INSERT INTO users (name, email, password, account_type_id, latitude, longitude)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
     
-    // Garante que se latitude ou longitude forem undefined, o JavaScript envia explicitamente null
     const [result] = await db.execute(sql, [
       name, 
       email, 
       password, 
-      account_type, 
+      account_type_id, 
       latitude ?? null, 
       longitude ?? null
     ]);
@@ -21,25 +20,37 @@ class User {
     return result.insertId;
   }
 
-  // Listar todos os utilizadores (útil para testes da API)
+  // Listar todos os utilizadores com JOIN para trazer o código legível do tipo de conta
   static async findAll() {
-    const [rows] = await db.execute('SELECT id, name, email, account_type, created_at FROM users');
+    const sql = `
+      SELECT u.id, u.name, u.email, at.code as account_type, u.created_at 
+      FROM users u
+      JOIN account_types at ON u.account_type_id = at.id
+    `;
+    const [rows] = await db.execute(sql);
     return rows;
   }
 
-  // Buscar utilizador por Email (Autenticação / Login)
+  // Buscar utilizador por Email (Autenticação / Login) com JOIN
   static async findByEmail(email) {
-    const sql = `SELECT * FROM users WHERE email = ?`;
+    const sql = `
+      SELECT u.*, at.code as account_type 
+      FROM users u
+      JOIN account_types at ON u.account_type_id = at.id
+      WHERE u.email = ?
+    `;
     const [rows] = await db.execute(sql, [email]);
     return rows[0];
   }
 
-  // Buscar utilizador por ID
+  // Buscar utilizador por ID com JOIN
   static async findById(id) {
     const sql = `
-      SELECT id, name, email, account_type, latitude, longitude, visibility_radius_km, is_visible, created_at 
-      FROM users 
-      WHERE id = ?
+      SELECT u.id, u.name, u.email, at.code as account_type, 
+             u.latitude, u.longitude, u.visibility_radius_km, u.is_visible, u.created_at 
+      FROM users u
+      JOIN account_types at ON u.account_type_id = at.id
+      WHERE u.id = ?
     `;
     const [rows] = await db.execute(sql, [id]);
     return rows[0];
@@ -54,6 +65,20 @@ class User {
     `;
     const [result] = await db.execute(sql, [latitude ?? null, longitude ?? null, is_visible, id]);
     return result.affectedRows > 0;
+  }
+
+  // Procurar jogadores próximos usando o ID do tipo de conta (1 = PLAYER)
+  static async findNearbyPlayers(latitude, longitude, radiusKm) {
+    const sql = `
+      SELECT id, name, email, latitude, longitude,
+        (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance
+      FROM users
+      WHERE account_type_id = 1 AND is_visible = 1
+      HAVING distance <= ?
+      ORDER BY distance ASC
+    `;
+    const [rows] = await db.execute(sql, [latitude, longitude, latitude, radiusKm]);
+    return rows;
   }
 }
 
