@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../controllers/tournament_controller.dart';
 import '../controllers/auth_controller.dart';
 import 'create_casual_tournament_screen.dart';
-import '../widgets/events/tournament_details_modal.dart'; // 👈 Import correto na pasta widgets/events/
+import '../widgets/events/tournament_details_modal.dart'; // ðŸ‘ˆ Import correto na pasta widgets/events/
 import '../widgets/discover/discover_featured_event_card.dart';
 import '../widgets/discover/discover_game_filters.dart';
 
@@ -19,7 +19,7 @@ class _EventsScreenState extends State<EventsScreen> {
   List<dynamic> _filteredTournaments = [];
   bool _isLoading = true;
   String _selectedPrivacyFilter = 'All'; // 'All', 'Public', 'Private'
-  int _selectedGameFilterIndex = 4; // 4 = All (por omissão)
+  int _selectedGameFilterIndex = 4; // 4 = All (por omissÃ£o)
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -31,18 +31,17 @@ class _EventsScreenState extends State<EventsScreen> {
   Future<void> _loadTournaments() async {
     setState(() => _isLoading = true);
     final tournaments = await TournamentController.getTournamentsList();
-    setState(() {
-      _allTournaments = tournaments;
-      _filterTournaments();
-      _isLoading = false;
-    });
+    if (!mounted) return;
+    _allTournaments = tournaments;
+    _filterTournaments();
+    setState(() => _isLoading = false);
   }
 
-  // Mapeia o índice do DiscoverGameFilters para o game_id correspondente na base de dados
+  // Mapeia o Ã­ndice do DiscoverGameFilters para o game_id correspondente na base de dados
   int? _getGameIdFromFilterIndex(int index) {
     switch (index) {
       case 0:
-        return 2; // Pokémon
+        return 2; // PokÃ©mon
       case 1:
         return 4; // Yu-Gi-Oh!
       case 2:
@@ -80,7 +79,7 @@ class _EventsScreenState extends State<EventsScreen> {
           matchesGame = tGameId == targetGameId;
         }
 
-        // 3. Filtro por texto (Título ou Nome do Criador)
+        // 3. Filtro por texto (TÃ­tulo ou Nome do Criador)
         final title = (t['title'] ?? '').toString().toLowerCase();
         final organizer = (t['organizer_name'] ?? '').toString().toLowerCase();
         bool matchesSearch = title.contains(query) || organizer.contains(query);
@@ -94,10 +93,10 @@ class _EventsScreenState extends State<EventsScreen> {
 
     final int? loggedUserId = AuthController.currentUserId;
 
-    // Se por acaso o ID for nulo, impede a ação e avisa o utilizador
+    // Se por acaso o ID for nulo, impede a aÃ§Ã£o e avisa o utilizador
     if (loggedUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro: Sessão não encontrada. Por favor, faz login novamente.')),
+        const SnackBar(content: Text('Erro: SessÃ£o nÃ£o encontrada. Por favor, faz login novamente.')),
       );
       return;
     }
@@ -116,7 +115,7 @@ class _EventsScreenState extends State<EventsScreen> {
           ),
           child: TournamentDetailsModal(
             tournament: tournament,
-            currentUserId: loggedUserId, // ⚠️ Substitui pelo ID real do utilizador autenticado atual
+            currentUserId: loggedUserId, // âš ï¸ Substitui pelo ID real do utilizador autenticado atual
             onChanged: _loadTournaments, // Atualiza a lista quando alteras, apagas ou participas
           ),
         ),
@@ -149,7 +148,7 @@ class _EventsScreenState extends State<EventsScreen> {
       ),
       body: Column(
         children: [
-          // Painel de Pesquisa e Filtros alinhados à esquerda
+          // Painel de Pesquisa e Filtros alinhados Ã  esquerda
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Column(
@@ -186,7 +185,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // DiscoverGameFilters alinhado à esquerda
+                // DiscoverGameFilters alinhado Ã  esquerda
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DiscoverGameFilters(
@@ -228,16 +227,16 @@ class _EventsScreenState extends State<EventsScreen> {
                           final String gameName = t['game_name'] ?? 'TCG';
                           final String organizerName = t['organizer_name'] ?? 'Unknown Creator';
                           final String location = isPrivate
-                              ? '📍 Private Location (Invite Only)'
-                              : '📍 ${t['location_name'] ?? 'Location not specified'}';
+                              ? 'ðŸ“ Private Location (Invite Only)'
+                              : 'ðŸ“ ${t['location_name'] ?? 'Location not specified'}';
 
-                          // Formatação dinâmica de start_time
+                          // FormataÃ§Ã£o dinÃ¢mica de start_time
                           String dateLabel = isPrivate ? 'PRIVATE' : 'TODAY';
                           if (t['start_time'] != null) {
                             try {
                               final DateTime dt = DateTime.parse(t['start_time']).toLocal();
                               dateLabel =
-                                  '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} • ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                                  '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} â€¢ ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
                               if (isPrivate) {
                                 dateLabel = '$dateLabel (PRIVATE)';
                               }
@@ -245,12 +244,12 @@ class _EventsScreenState extends State<EventsScreen> {
                           }
 
                           final String storeDetails = 'By $organizerName\n$location';
-                          final String tagText = '${gameName.toUpperCase()} • $dateLabel';
+                          final String tagText = '${gameName.toUpperCase()} â€¢ $dateLabel';
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: GestureDetector(
-                              onTap: () => _openEventDetailsModal(context, t), // 👈 Abre o modal de detalhes ao tocar
+                              onTap: () => _openEventDetailsModal(context, t), // ðŸ‘ˆ Abre o modal de detalhes ao tocar
                               child: DiscoverFeaturedEventCard(
                                 tag: tagText,
                                 title: t['title'] ?? 'Tournament',

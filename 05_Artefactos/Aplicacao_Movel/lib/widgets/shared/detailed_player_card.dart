@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../screens/profile_screen.dart';
 import 'user_avatar.dart';
 import 'status_badge.dart';
 
@@ -31,131 +32,153 @@ class DetailedPlayerCard extends StatelessWidget {
     required this.isHighlighted,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isHighlighted
-              ? AppColors.primaryPurple.withValues(alpha: 0.55)
-              : AppColors.cardBorder,
-          width: 1.2,
+  void _openProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(
+          name: name,
+          handleAndLocation: handleAndDistance,
+          avatarUrl: avatarUrl,
+          statusLabel: statusLabel,
+          statusColor: statusColor,
+          bio: bio,
+          showBackButton: true,
         ),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              UserAvatar(
-                imageUrl: avatarUrl,
-                size: 48,
-                statusColor: statusColor,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      handleAndDistance,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              StatusBadge(
-                label: statusLabel,
-                dotColor: statusColor,
-                backgroundColor: AppColors.surfaceLight,
-              ),
-            ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openProfile(context),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isHighlighted
+                ? AppColors.primaryPurple.withValues(alpha: 0.55)
+                : AppColors.cardBorder,
+            width: 1.2,
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              ...gameBadges.map(
-                (b) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: b.color.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: b.color.withValues(alpha: 0.6)),
-                    ),
-                    child: Icon(b.icon, color: b.color, size: 16),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                UserAvatar(
+                  imageUrl: avatarUrl,
+                  size: 48,
+                  statusColor: statusColor,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        handleAndDistance,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  bio,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.5,
+                StatusBadge(
+                  label: statusLabel,
+                  dotColor: statusColor,
+                  backgroundColor: AppColors.surfaceLight,
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                ...gameBadges.map(
+                  (b) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: b.color.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: b.color.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      child: Icon(b.icon, color: b.color, size: 16),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    bio,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryPurple,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Connect',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
                   height: 40,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryPurple,
+                  child: OutlinedButton(
+                    onPressed: () => _openProfile(context),
+                    style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      elevation: 0,
+                      side: const BorderSide(color: AppColors.cardBorder),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Connect',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
+                    child: const Text('Profile'),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                height: 40,
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.cardBorder),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Profile'),
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
