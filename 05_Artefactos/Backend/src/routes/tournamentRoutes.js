@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const tournamentController = require('../controllers/tournamentController');
 
+// Rota getAllTournaments para trazer tanto públicos como privados
+router.get('/', tournamentController.getAllTournaments);
+
 // Rota POST para criar um torneio (casual ou oficial)
 router.post('/', tournamentController.createTournament);
 
