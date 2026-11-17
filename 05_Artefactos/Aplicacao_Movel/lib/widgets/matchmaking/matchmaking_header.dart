@@ -6,10 +6,7 @@ import '../shared_widgets.dart';
 class MatchmakingHeader extends StatelessWidget {
   final VoidCallback onHistoryTap;
 
-  const MatchmakingHeader({
-    super.key,
-    required this.onHistoryTap,
-  });
+  const MatchmakingHeader({super.key, required this.onHistoryTap});
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +33,7 @@ class MatchmakingHeader extends StatelessWidget {
           ],
         ),
         // Atalho para consultar o histórico de partidas anteriores
-        HeaderIconButton(
-          icon: Icons.history_rounded,
-          onTap: onHistoryTap,
-        ),
+        HeaderIconButton(icon: Icons.history_rounded, onTap: onHistoryTap),
       ],
     );
   }

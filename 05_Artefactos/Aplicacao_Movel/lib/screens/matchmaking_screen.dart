@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../controllers/matchmaking_controller.dart';
 import '../theme/app_colors.dart';
 import '../widgets/matchmaking/matchmaking_header.dart';
 import '../widgets/matchmaking/matchmaking_status_banner.dart';
@@ -9,8 +10,26 @@ import '../widgets/matchmaking/players_section.dart';
 
 /// Ecrã principal de Matchmaking: Atua estritamente como esqueleto estrutural,
 /// unindo todos os componentes modulares de procura de oponentes.
-class MatchmakingScreen extends StatelessWidget {
+class MatchmakingScreen extends StatefulWidget {
   const MatchmakingScreen({super.key});
+  @override
+  State<MatchmakingScreen> createState() => _MatchmakingScreenState();
+}
+
+class _MatchmakingScreenState extends State<MatchmakingScreen> {
+  late final MatchmakingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = MatchmakingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,23 +50,24 @@ class MatchmakingScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // 3. Resumo das preferências ativas (raio, tempo e estilo de jogo)
-          const MatchmakingPreferencesCard(),
+          MatchmakingPreferencesCard(controller: _controller),
           const SizedBox(height: 16),
 
-          // 4. Cartão em destaque com o perfil do oponente mais compatível
           const StrongMatchCard(),
           const SizedBox(height: 16),
 
-          PlayersSection(),
-          
-          const SizedBox(height: 16),
-          // 5. Botão principal de ação modularizado
+          const PlayersSection(),
+          const SizedBox(height: 16), 
+
           MatchmakingActionButton(
             onPressed: () {
-              // Lógica para iniciar o matchmaking
+              // Acesso às preferências atualizadas:
+              // _controller.preferences.distanceMiles
+              // _controller.preferences.startTime
+              // _controller.preferences.playStyle
             },
           ),
-          const SizedBox(height: 12),
+
 
           // Nota informativa de transparência sobre a privacidade da geolocalização
           const Center(

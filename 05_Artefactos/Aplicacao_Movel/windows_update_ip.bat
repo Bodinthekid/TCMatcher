@@ -17,7 +17,7 @@ if "%LOCAL_IP%"=="" (
 )
 
 :: Escreve o IP detetado automaticamente no ficheiro .env
-echo API_BASE_URL=http://%LOCAL_IP%:3000/api/users> .env
+echo API_BASE_URL=http://%LOCAL_IP%:3000/api> .env
 
 echo ✅ Ficheiro .env atualizado com sucesso!
 echo 🌐 IP configurado: %LOCAL_IP%

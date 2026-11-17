@@ -1,9 +1,11 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TournamentService {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000/api';
+  static String get baseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000/api';
 
   // 1. Criar Torneio (POST específico)
   static Future<dynamic?> postTournament(Map<String, dynamic> bodyData) async {
@@ -36,7 +38,10 @@ class TournamentService {
   }
 
   // 3. Método POST genérico (Ex: Participar num torneio)
-  static Future<dynamic?> post(String endpoint, Map<String, dynamic> bodyData) async {
+  static Future<dynamic?> post(
+    String endpoint,
+    Map<String, dynamic> bodyData,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
@@ -51,7 +56,10 @@ class TournamentService {
   }
 
   // 4. Método PUT genérico (Ex: Editar/Atualizar torneio)
-  static Future<dynamic?> put(String endpoint, Map<String, dynamic> bodyData) async {
+  static Future<dynamic?> put(
+    String endpoint,
+    Map<String, dynamic> bodyData,
+  ) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl$endpoint'),
