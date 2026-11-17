@@ -1,33 +1,43 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
+import '../../../services/auth_services.dart';
 import '../../shared/achievement_badge.dart';
 import '../../shared/header_icon_button.dart';
 
 class StoreProfileHeaderInfo extends StatelessWidget {
-  const StoreProfileHeaderInfo({super.key});
+  final String? storeName;
+
+  const StoreProfileHeaderInfo({
+    super.key,
+    this.storeName,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final displayStoreName =
+        storeName ?? AuthService.currentUserName ?? 'Mana Vault Games';
+    final cleanHandle = displayStoreName.toLowerCase().replaceAll(' ', '');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 10),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Text(
-                'Mana Vault Games',
+                displayStoreName,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             ),
-            SizedBox(width: 8),
-            AchievementBadge(
+            const SizedBox(width: 8),
+            const AchievementBadge(
               icon: Icons.verified_outlined,
               label: 'Verified Store',
               color: AppColors.pokemonGold,
@@ -64,9 +74,9 @@ class StoreProfileHeaderInfo extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        const Text(
-          '@manavaultgames  ·  manavault.gg  ·  Call',
-          style: TextStyle(color: AppColors.accentCyan, fontSize: 12),
+        Text(
+          '@$cleanHandle  ·  $cleanHandle.gg  ·  Call',
+          style: const TextStyle(color: AppColors.accentCyan, fontSize: 12),
         ),
         const SizedBox(height: 14),
         Row(

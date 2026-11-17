@@ -1,77 +1,172 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
-import '../shared_widgets.dart';
 
-/// Cartão principal com a identidade do utilizador (Avatar, nome, bio e presença).
-class ProfileHeaderCard extends StatelessWidget {
-  const ProfileHeaderCard({super.key});
+class FavoriteGameOption {
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color color;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cardBorder),
+  const FavoriteGameOption({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
+const List<FavoriteGameOption>
+    kFavoriteGameOptions = [
+  FavoriteGameOption(
+    id: 'pokemon',
+    label: 'Pokémon',
+    icon: Icons.catching_pokemon,
+    color: AppColors.pokemonGold,
+  ),
+
+  FavoriteGameOption(
+    id: 'magic',
+    label: 'Magic',
+    icon:
+        Icons.local_fire_department_outlined,
+    color: AppColors.magicOrange,
+  ),
+
+  FavoriteGameOption(
+    id: 'one_piece',
+    label: 'One Piece',
+    icon: Icons.anchor_rounded,
+    color: AppColors.onePieceBlue,
+  ),
+
+  FavoriteGameOption(
+    id: 'yugioh',
+    label: 'Yu-Gi-Oh!',
+    icon:
+        Icons.change_history_rounded,
+    color: AppColors.yugiohPurple,
+  ),
+];
+
+class ProfileFavoriteGames
+    extends StatelessWidget {
+  static final ValueNotifier<
+      Set<String>> selectedGameIds =
+      ValueNotifier<Set<String>>({
+    'pokemon',
+    'magic',
+    'one_piece',
+    'yugioh',
+  });
+
+  final bool isEditable;
+
+  final Set<String>? gameIds;
+
+  const ProfileFavoriteGames({
+    super.key,
+    this.isEditable = false,
+    this.gameIds,
+  });
+
+  Widget _buildGame(
+    FavoriteGameOption game,
+  ) {
+    return Padding(
+      padding:
+          const EdgeInsets.only(
+        right: 14,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            children: [
-              // Avatar do utilizador com indicador visual de estado ativo/disponível
-              UserAvatar(
-                imageUrl: 'https://i.pravatar.cc/150?img=47',
-                size: 64,
-                statusColor: AppColors.statusAvailable,
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.surface,
+              border: Border.all(
+                color: game.color,
+                width: 2,
               ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Maya Chen',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    // Identificador de rede (handle) e localização geográfica aproximada
-                    Text(
-                      '@mayacards · Brooklyn, NY',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Biografia pessoal descritiva dos formatos de jogo favoritos do utilizador
-          const Text(
-            'Competitive Standard player & casual Commander enthusiast. Always down for local matches around Brooklyn!',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13.5,
-              height: 1.4,
+            ),
+            child: Icon(
+              game.icon,
+              color: game.color,
+              size: 24,
             ),
           ),
-          const SizedBox(height: 16),
-          // Etiqueta (Badge) estática que reflete o estado atual de disponibilidade para jogar
-          StatusBadge(
-            label: 'Available to Play',
-            dotColor: AppColors.statusAvailable,
-            backgroundColor: const Color(0xFF282254),
+
+          const SizedBox(height: 5),
+
+          Text(
+            game.label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight:
+                  FontWeight.w500,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGames(
+    Set<String> selectedIds,
+  ) {
+    final games =
+        kFavoriteGameOptions
+            .where(
+              (game) =>
+                  selectedIds
+                      .contains(game.id),
+            )
+            .toList();
+
+    if (games.isEmpty) {
+      return const Text(
+        'No favorite games selected',
+        style: TextStyle(
+          color:
+              AppColors.textSecondary,
+          fontSize: 12,
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection:
+          Axis.horizontal,
+      child: Row(
+        children:
+            games.map(_buildGame).toList(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (gameIds != null) {
+      return _buildGames(
+        gameIds!,
+      );
+    }
+
+    return ValueListenableBuilder<
+        Set<String>>(
+      valueListenable:
+          selectedGameIds,
+      builder: (
+        context,
+        selectedIds,
+        _,
+      ) {
+        return _buildGames(
+          selectedIds,
+        );
+      },
     );
   }
 }

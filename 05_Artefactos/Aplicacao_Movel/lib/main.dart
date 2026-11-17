@@ -3,18 +3,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'theme/app_colors.dart';
 import 'screens/login_screen.dart';
 
-// INICIALIZAÇÃO DA APLICAÇÃO
+// INICIALIZAÃ‡ÃƒO DA APLICAÃ‡ÃƒO
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Carrega as variáveis de ambiente
-  await dotenv.load(fileName: ".env");
+  // Carrega as variÃ¡veis de ambiente
+  await dotenv.load(fileName: ".env", isOptional: true);
 
-  // Inicia a aplicação
+  // Inicia a aplicaÃ§Ã£o
   runApp(const TcgCompanionApp());
 }
 
-// APLICAÇÃO PRINCIPAL
+// APLICAÃ‡ÃƒO PRINCIPAL
 class TcgCompanionApp extends StatelessWidget {
   const TcgCompanionApp({super.key});
 
