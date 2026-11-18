@@ -1,7 +1,7 @@
-const db = require('../config/data_base'); // Ajusta o caminho da tua conexão MySQL se necessário
+const axios = require('axios');
 const Store = require('../models/Store');
 
-// Listar todas as lojas parceiras (da tabela stores)
+// Listar todas as lojas parceiras
 exports.getAllStores = async (req, res) => {
   try {
     const stores = await Store.findAll();
@@ -29,97 +29,118 @@ exports.getStoreByUserId = async (req, res) => {
   }
 };
 
-// 🌍 Pesquisar lojas no mapa por proximidade (Lê do stores_map + indica se está verificada)
+// 🌍 Pesquisa otimizada utilizando a nova Google Places API (New)
 exports.getNearbyStores = async (req, res) => {
   try {
-    const { lat, lon, radius = 5000 } = req.query;
+    const { lat, lon } = req.query;
 
     if (!lat || !lon) {
       return res.status(400).json({ message: 'Latitude e longitude são obrigatórias.' });
     }
 
-    const targetLat = parseFloat(lat);
-    const targetLon = parseFloat(lon);
-    const maxRadiusMeters = parseFloat(radius);
-
-    // 1. Buscar todas as lojas do mapa global (pre-chegadas pelo script do Overpass)
-    // Fazemos LEFT JOIN com a tabela stores para verificar se já tem dono atribuído
-    const [mapStores] = await db.execute(`
-      SELECT 
-        m.id, m.country, m.name, m.city, m.address, m.postal_code, 
-        m.phone, m.website, m.opening_hours, m.lat, m.lon,
-        CASE WHEN s.id IS NOT NULL THEN TRUE ELSE FALSE END AS is_verified,
-        s.id AS partner_store_id,
-        s.user_id
-      FROM stores_map m
-      LEFT JOIN stores s ON m.id = s.store_map_id
-    `);
-
-    // 2. Função auxiliar para calcular a distância em metros (Fórmula de Haversine)
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371e3; // Raio da Terra em metros
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ message: 'Chave da API do Google Maps não configurada no servidor.' });
     }
 
-    // 3. Filtrar as lojas do mapa que estão dentro do raio pretendido
-    const nearbyStores = mapStores.filter(store => {
-      const dist = calculateDistance(targetLat, targetLon, store.lat, store.lon);
-      return dist <= maxRadiusMeters;
+    // Termos de busca para a nova API
+    const searchQueries = [
+      'lojas tcg ',
+      'card game store ',
+      'mercadia games',
+      'versus game center'
+    ];
+
+    let allPlaces = [];
+
+    // O endpoint da nova API (Places API New) usa POST com um corpo JSON e cabeçalhos específicos
+    for (const q of searchQueries) {
+      try {
+        const url = `https://places.googleapis.com/v1/places:searchText`;
+        
+        const response = await axios.post(
+          url,
+          {
+            textQuery: q,
+            locationBias: {
+              circle: {
+                center: {
+                  latitude: parseFloat(lat),
+                  longitude: parseFloat(lon)
+                },
+                radius: 15000.0
+              }
+            }
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': apiKey,
+              'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating'
+            }
+          }
+        );
+        
+        if (response.data && response.data.places) {
+          // Mapeia o formato da nova API para a estrutura que o teu frontend espera
+          const formattedPlaces = response.data.places.map(place => ({
+            id: place.id,
+            name: place.displayName?.text || 'Loja TCG',
+            lat: place.location?.latitude,
+            lon: place.location?.longitude,
+            address: place.formattedAddress || 'Morada comercial',
+            rating: place.rating || 0.0,
+            is_verified: false,
+          }));
+          allPlaces.push(...formattedPlaces);
+        }
+      } catch (err) {
+        console.error(`Erro na query ${q} (Places New):`, err.response?.data || err.message);
+      }
+    }
+
+    // Remove duplicados com base no ID único do lugar
+    const uniqueStoresMap = new Map();
+    allPlaces.forEach(store => {
+      if (store.id) {
+        uniqueStoresMap.set(store.id, store);
+      }
     });
+
+    const stores = Array.from(uniqueStoresMap.values());
 
     return res.status(200).json({
       success: true,
-      count: nearbyStores.length,
-      stores: nearbyStores
+      count: stores.length,
+      stores: stores,
     });
 
   } catch (error) {
-    console.error('Erro ao buscar lojas próximas do mapa:', error);
+    console.error('Erro ao consultar a nova Google Places API:', error.response?.data || error.message);
     return res.status(500).json({ 
-      message: 'Erro interno ao buscar lojas próximas.', 
-      error: error.message 
+      message: 'Erro interno ao buscar lojas no Google Maps.', 
+      error: error.response?.data || error.message 
     });
   }
 };
 
-// 🔐 Reivindicar uma loja do mapa (converte uma loja do OSM numa loja parceira verificada)
+// 🔐 Reivindicar uma loja do mapa
 exports.claimStore = async (req, res) => {
   try {
-    const { userId, storeMapId, phone, openingHours } = req.body;
+    const { userId, storeMapId, phone, openingHours, storeName, address } = req.body;
 
     if (!userId || !storeMapId) {
       return res.status(400).json({ message: 'User ID e Store Map ID são obrigatórios.' });
     }
 
-    // 1. Verificar se a loja existe no stores_map
-    const [mapStore] = await db.execute('SELECT * FROM stores_map WHERE id = ?', [storeMapId]);
-    if (mapStore.length === 0) {
-      return res.status(404).json({ message: 'Loja não encontrada no mapa global.' });
-    }
-
-    // 2. Verificar se esta loja já foi reivindicada por outro utilizador
-    const [existingClaim] = await db.execute('SELECT * FROM stores WHERE store_map_id = ?', [storeMapId]);
-    if (existingClaim.length > 0) {
-      return res.status(400).json({ message: 'Esta loja já foi reivindicada por outro utilizador.' });
-    }
-
-    // 3. Inserir o registo na tabela stores oficial usando o Model Store
-    const data = mapStore[0];
     await Store.create({
       user_id: userId,
       store_map_id: storeMapId,
-      store_name: data.name,
-      address: data.address || 'Morada não especificada',
-      phone: phone || data.phone,
-      opening_hours: openingHours || data.opening_hours,
-      status: 'approved' // ou 'pending', conforme a tua regra de negócio para lojas reivindicadas
+      store_name: storeName || 'Loja Parceira',
+      address: address || 'Morada não especificada',
+      phone: phone || '',
+      opening_hours: openingHours || '',
+      status: 'approved'
     });
 
     return res.status(201).json({
@@ -130,37 +151,5 @@ exports.claimStore = async (req, res) => {
   } catch (error) {
     console.error('Erro ao reivindicar loja:', error);
     return res.status(500).json({ message: 'Erro interno ao reivindicar loja.', error: error.message });
-  }
-};
-
-// 🌍 Obter todas as lojas de um país específico (ex: Portugal) do stores_map
-exports.getStoresByCountry = async (req, res) => {
-  try {
-    const { country = 'Portugal' } = req.query;
-
-    const [rows] = await db.execute(`
-      SELECT 
-        m.id, m.country, m.name, m.city, m.address, m.postal_code, 
-        m.phone, m.website, m.opening_hours, m.lat, m.lon,
-        CASE WHEN s.id IS NOT NULL THEN TRUE ELSE FALSE END AS is_verified,
-        s.id AS partner_store_id,
-        s.user_id
-      FROM stores_map m
-      LEFT JOIN stores s ON m.id = s.store_map_id
-      WHERE m.country = ?
-    `, [country]);
-
-    return res.status(200).json({
-      success: true,
-      count: rows.length,
-      stores: rows
-    });
-
-  } catch (error) {
-    console.error('Erro ao buscar lojas por país:', error);
-    return res.status(500).json({ 
-      message: 'Erro interno ao buscar lojas do país.', 
-      error: error.message 
-    });
   }
 };

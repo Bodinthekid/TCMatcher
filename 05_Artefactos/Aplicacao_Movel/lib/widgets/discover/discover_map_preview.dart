@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import '../../theme/app_colors.dart';
 
 // 📦 Importações do Model e do Service de Lojas
@@ -9,7 +10,7 @@ import '../../services/store_service.dart';
 
 /// [DiscoverMapPreview]
 /// Widget responsável pela pré-visualização, expansão e renderização de lojas reais
-/// no mapa da aba Discover utilizando o [flutter_map].
+/// atualizadas dinamicamente conforme o movimento do mapa.
 class DiscoverMapPreview extends StatefulWidget {
   const DiscoverMapPreview({super.key});
 
@@ -18,29 +19,34 @@ class DiscoverMapPreview extends StatefulWidget {
 }
 
 class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
-  // Estado que controla se o cartão do mapa está expandido (360px) ou em miniatura (160px).
   bool _isExpanded = false;
+  GoogleMapController? _mapController;
 
-  // Coordenadas centrais iniciais (focadas em Lisboa por predefinição).
+  // Posição inicial (ex: Lisboa)
   static const LatLng _portugalCenter = LatLng(38.7223, -9.1393);
+  
+  // Mantém o centro atual da câmara para as requisições dinâmicas
+  LatLng _currentCenter = _portugalCenter;
 
-  // 🔄 Variáveis de estado para gerir as lojas reais vindas do backend
   List<TcgStoreModel> _stores = [];
   bool _isLoadingStores = true;
 
   @override
   void initState() {
     super.initState();
-    _loadNearbyStores();
+    _loadStoresForLocation(_portugalCenter.latitude, _portugalCenter.longitude);
   }
 
-  /// Função assíncrona para ir buscar as lojas próximas ao backend Node.js
-  Future<void> _loadNearbyStores() async {
-    // Coordenadas de teste em Lisboa (onde validámos as lojas na Overpass API)
-    const double testLat = 38.7223;
-    const double testLon = -9.1393;
+  /// Função para carregar lojas com base em coordenadas específicas
+  Future<void> _loadStoresForLocation(double lat, double lon) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoadingStores = true;
+    });
 
-    final stores = await StoreService.getNearbyStores(testLat, testLon);
+    // Pede ao serviço as lojas próximas da nova coordenada da câmara
+    final stores = await StoreService.getNearbyStores(lat, lon);
 
     if (mounted) {
       setState(() {
@@ -50,8 +56,7 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
     }
   }
 
-  /// Alterna o estado de expansão do mapa com animação suave.
-  void _toggleExpanded() {
+  _toggleExpanded() {
     setState(() {
       _isExpanded = !_isExpanded;
     });
@@ -59,10 +64,45 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
 
   @override
   Widget build(BuildContext context) {
+    final Set<Marker> googleMarkers = _stores.map((store) {
+      return Marker(
+        markerId: MarkerId('google_store_${store.id}'),
+        position: LatLng(store.lat, store.lon),
+        infoWindow: InfoWindow(
+          title: store.name,
+          snippet: store.address,
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: AppColors.surface,
+                title: Text(store.name, style: const TextStyle(color: Colors.white)),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Morada: ${store.address}', style: const TextStyle(color: Colors.white70)),
+                    const SizedBox(height: 8),
+                    const Text('Dados obtidos dinamicamente do Google Maps', style: TextStyle(color: AppColors.accentCyan, fontSize: 12)),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Fechar', style: TextStyle(color: AppColors.accentCyan)),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+      );
+    }).toSet();
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 350),
       curve: Curves.fastOutSlowIn,
-      // Altura dinâmica: 160px em modo miniatura, 360px em modo expandido.
       height: _isExpanded ? 360 : 160,
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -73,85 +113,75 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            // 1. Camada do Mapa (FlutterMap com CARTO Voyager e Marcadores Dinâmicos)
+            // 1. Google Maps com escuta de movimento
             Positioned.fill(
-              child: FlutterMap(
-                options: const MapOptions(
-                  initialCenter: _portugalCenter,
-                  initialZoom: 13.0,
-                  interactionOptions: InteractionOptions(
-                    flags: InteractiveFlag.all,
-                  ),
+              child: GoogleMap(
+                initialCameraPosition: const CameraPosition(
+                  target: _portugalCenter,
+                  zoom: 13.0,
                 ),
-                children: [
-                  // Azulejos do mapa com a API Key oficial da CARTO (Estilo Voyager Claro)
-                  TileLayer(
-                    urlTemplate:
-                        'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_53oy_1_389e91f68504fff763ebd527',
-                    userAgentPackageName: 'com.tcgcompanion.app',
-                  ),
-                  
-                  // 📍 2. Marcadores dinâmicos gerados a partir do TcgStoreModel
-                  MarkerLayer(
-                    markers: _stores.map((store) {
-                      return Marker(
-                        point: LatLng(store.lat, store.lon),
-                        width: 40,
-                        height: 40,
-                        child: GestureDetector(
-                          onTap: () {
-                            // Mostra os detalhes da loja ao clicar no pino
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(store.name),
-                                content: Text('Morada: ${store.address}'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Fechar', style: TextStyle(color: AppColors.accentCyan)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.redAccent,
-                            size: 40,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                markers: googleMarkers,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+
+                scrollGesturesEnabled: _isExpanded,
+                zoomGesturesEnabled: _isExpanded,
+                rotateGesturesEnabled: _isExpanded,
+                tiltGesturesEnabled: _isExpanded,
+                
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<PanGestureRecognizer>(() => PanGestureRecognizer()),
+                  Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
+                  Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
+                  Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer()),
+                },
+
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                },
+
+                // 📍 Atualiza a coordenada central sempre que o utilizador para de mexer o mapa
+                onCameraMove: (position) {
+                  _currentCenter = position.target;
+                },
+                
+                // 🔄 Quando o movimento termina (o dedo levanta e o mapa estabiliza), busca novas lojas
+                onCameraIdle: () {
+                  if (_isExpanded) {
+                    _loadStoresForLocation(_currentCenter.latitude, _currentCenter.longitude);
+                  }
+                },
               ),
             ),
 
-            // 3. Indicador subtil de carregamento das lojas no canto superior direito
+            // 2. Indicador de carregamento dinâmico
             if (_isLoadingStores)
               Positioned(
                 top: 12,
                 right: 60,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppColors.background.withValues(alpha: 0.85),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.accentCyan,
+                child: IgnorePointer(
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.background.withValues(alpha: 0.85),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.cardBorder),
+                    ),
+                    child: const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accentCyan,
+                      ),
                     ),
                   ),
                 ),
               ),
 
-            // 4. Badge interativo no canto superior esquerdo (Mostra "Expandir" ou "Recolher")
+            // 3. Botão Expandir / Recolher
             Positioned(
               top: 12,
               left: 12,
@@ -183,7 +213,7 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
               ),
             ),
 
-            // 5. Botão circular com seta animada no canto superior direito
+            // 4. Seta indicadora de expansão
             Positioned(
               top: 12,
               right: 12,
@@ -194,7 +224,7 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
                   decoration: BoxDecoration(
                     color: AppColors.background.withValues(alpha: 0.85),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.cardBorder),
+                    border: Border.all(color: AppColors.cardBorder ?? AppColors.cardBorder),
                   ),
                   child: AnimatedRotation(
                     turns: _isExpanded ? 0.5 : 0.0,

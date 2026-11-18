@@ -38,6 +38,8 @@ dependencies:
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
   maplibre_gl: ^0.28.0 
+  google_maps_flutter: ^2.5.3  # 👈 Pacote oficial do Google Maps
+  geolocator: ^10.1.0         # 👈 Útil para obter a localização atual do utilizador
 
 dev_dependencies:
   flutter_test:
