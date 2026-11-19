@@ -1,4 +1,3 @@
-// lib/screens/main_shell.dart
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'discover_screen.dart';
@@ -26,21 +25,24 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: _screens[_currentIndex],
-      ),
+      backgroundColor: AppColors.background,
+      body: _screens[_currentIndex],
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border(
-            top: BorderSide(color: AppColors.cardBorder, width: 1),
+            top: BorderSide(
+              color: AppColors.cardBorder,
+              width: 1,
+            ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 8),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.transparent,
+          onTap: (index) {
+            setState(() => _currentIndex = index);
+          },
+          backgroundColor: AppColors.surface,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: AppColors.accentCyan,

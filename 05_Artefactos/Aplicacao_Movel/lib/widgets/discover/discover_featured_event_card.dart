@@ -26,15 +26,15 @@ class DiscoverFeaturedEventCard extends StatelessWidget {
 
     switch (parsedId) {
       case 1:
-        return 'images/logo_games/mtg_logo.png'; // Magic 
+        return 'assets/images/logo_games/mtg_logo.png'; // Magic 
       case 2:
-        return 'images/logo_games/pkm_logo.png'; // Pokémon
+        return 'assets/images/logo_games/pkm_logo.png'; // Pokémon
       case 3:
-        return 'images/logo_games/opg_logo.png'; // One Piece
+        return 'assets/images/logo_games/opg_logo.png'; // One Piece
       case 4:
-        return 'images/logo_games/ygo_logo.png'; // Yu-Gi-Oh!
+        return 'assets/images/logo_games/ygo_logo.png'; // Yu-Gi-Oh!
       default:
-        return 'images/logo_games/mtg_logo.png'; // Padrão
+        return 'assets/images/logo_games/mtg_logo.png'; // Padrão
     }
   }
 
