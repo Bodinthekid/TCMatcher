@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart' show rootBundle; // 📌 Necessário para ler o JSON
 import '../../theme/app_colors.dart';
 
-// 📦 Importações do Model e do Service de Lojas
 import '../../models/tcg_store_model.dart';
 import '../../services/store_service.dart';
 
-/// [DiscoverMapPreview]
-/// Widget responsável pela renderização em ecrã inteiro de lojas reais
-/// atualizadas dinamicamente conforme o movimento da câmara no mapa.
 class DiscoverMapPreview extends StatefulWidget {
   const DiscoverMapPreview({super.key});
 
@@ -21,30 +18,41 @@ class DiscoverMapPreview extends StatefulWidget {
 class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
   GoogleMapController? _mapController;
 
-  // Posição inicial (ex: Lisboa)
   static const LatLng _portugalCenter = LatLng(38.7223, -9.1393);
-  
-  // Mantém o centro atual da câmara para as requisições dinâmicas
   LatLng _currentCenter = _portugalCenter;
 
   List<TcgStoreModel> _stores = [];
   bool _isLoadingStores = true;
+  String? _darkMapStyle; // 📌 Variável para guardar o estilo escuro
 
   @override
   void initState() {
     super.initState();
+    _loadMapStyle(); // 📌 Carrega o JSON do estilo escuro
     _loadStoresForLocation(_portugalCenter.latitude, _portugalCenter.longitude);
   }
 
-  /// Função para carregar lojas com base em coordenadas específicas
+  // 📌 Lê o JSON dos assets. Quando termina, o setState faz o GoogleMap
+  // receber o novo `style`, por isso a ordem dos eventos já não importa.
+  Future<void> _loadMapStyle() async {
+    try {
+      final style = await rootBundle.loadString('assets/map_dark_style.json');
+      if (!mounted) return;
+      setState(() {
+        _darkMapStyle = style;
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar o estilo dark do mapa: $e');
+    }
+  }
+
   Future<void> _loadStoresForLocation(double lat, double lon) async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoadingStores = true;
     });
 
-    // Pede ao serviço as lojas próximas da nova coordenada da câmara
     final stores = await StoreService.getNearbyStores(lat, lon);
 
     if (mounted) {
@@ -95,25 +103,25 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
 
     return Stack(
       children: [
-        // 1. Google Maps em ecrã inteiro com escuta de movimento
         Positioned.fill(
           child: GoogleMap(
             initialCameraPosition: const CameraPosition(
               target: _portugalCenter,
               zoom: 13.0,
             ),
+            // 📌 Estilo escuro definido diretamente no mapa (sem setMapStyle)
+            style: _darkMapStyle,
             markers: googleMarkers,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
 
-            // Gestos totalmente ativos para navegação livre
             scrollGesturesEnabled: true,
             zoomGesturesEnabled: true,
             rotateGesturesEnabled: true,
             tiltGesturesEnabled: true,
-            
+
             gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
               Factory<PanGestureRecognizer>(() => PanGestureRecognizer()),
               Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
@@ -125,22 +133,19 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
               _mapController = controller;
             },
 
-            // 📍 Atualiza a coordenada central sempre que o utilizador mexe o mapa
             onCameraMove: (position) {
               _currentCenter = position.target;
             },
-            
-            // 🔄 Quando o movimento termina, busca novas lojas para a nova zona visível
+
             onCameraIdle: () {
               _loadStoresForLocation(_currentCenter.latitude, _currentCenter.longitude);
             },
           ),
         ),
 
-        // 2. Indicador subtil de carregamento dinâmico (opcional, aparece no canto superior se estiver a atualizar)
         if (_isLoadingStores)
           Positioned(
-            top: 110, // Posicionado logo abaixo do cabeçalho de filtros da DiscoverScreen
+            top: 110,
             right: 20,
             child: IgnorePointer(
               child: Container(
