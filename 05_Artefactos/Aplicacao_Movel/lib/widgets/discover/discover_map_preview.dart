@@ -24,11 +24,13 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
   List<TcgStoreModel> _stores = [];
   bool _isLoadingStores = true;
   String? _darkMapStyle; // 📌 Variável para guardar o estilo escuro
+  BitmapDescriptor? _storeIcon; // 🆕 Ícone personalizado das lojas
 
   @override
   void initState() {
     super.initState();
     _loadMapStyle(); // 📌 Carrega o JSON do estilo escuro
+    _loadStoreIcon(); // 🆕 Carrega o ícone das lojas
     _loadStoresForLocation(_portugalCenter.latitude, _portugalCenter.longitude);
   }
 
@@ -43,6 +45,23 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
       });
     } catch (e) {
       debugPrint('Erro ao carregar o estilo dark do mapa: $e');
+    }
+  }
+
+  // 🆕 Carrega o PNG do ícone. Enquanto não termina, os marcadores
+  // usam o pin violeta por defeito (ver o `icon` no Marker abaixo).
+  Future<void> _loadStoreIcon() async {
+    try {
+      final icon = await BitmapDescriptor.asset(
+        const ImageConfiguration(size: Size(32, 40)),
+        'assets/icons/store_marker.png',
+      );
+      if (!mounted) return;
+      setState(() {
+        _storeIcon = icon;
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar o ícone das lojas: $e');
     }
   }
 
@@ -97,7 +116,9 @@ class _DiscoverMapPreviewState extends State<DiscoverMapPreview> {
             );
           },
         ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+        // 🆕 Ícone personalizado; se ainda não carregou, usa o pin violeta
+        icon: _storeIcon ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
       );
     }).toSet();
 
