@@ -37,7 +37,7 @@ class MatchPreferencesModel {
     PlayStyleOption? playStyle,
   }) {
     return MatchPreferencesModel(
-      distanceKm: distanceMiles ?? this.distanceKm,
+      distanceKm: distanceMiles ?? distanceKm,
       startTime: startTime ?? this.startTime,
       playStyle: playStyle ?? this.playStyle,
     );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 import '../../screens/profile_screen.dart';
-import 'user_avatar.dart';
+import '../../theme/app_colors.dart';
+import 'player_card_actions.dart';
 import 'status_badge.dart';
+import 'user_avatar.dart';
 
 class GameBadgeData {
   final IconData icon;
@@ -49,6 +50,22 @@ class DetailedPlayerCard extends StatelessWidget {
     );
   }
 
+  Widget _buildBadge(GameBadgeData badge) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: badge.color.withValues(alpha: 0.14),
+          shape: BoxShape.circle,
+          border: Border.all(color: badge.color.withValues(alpha: 0.6)),
+        ),
+        child: Icon(badge.icon, color: badge.color, size: 16),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -69,11 +86,7 @@ class DetailedPlayerCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                UserAvatar(
-                  imageUrl: avatarUrl,
-                  size: 48,
-                  statusColor: statusColor,
-                ),
+                UserAvatar(imageUrl: avatarUrl, size: 48, statusColor: statusColor),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -108,23 +121,7 @@ class DetailedPlayerCard extends StatelessWidget {
             const SizedBox(height: 14),
             Row(
               children: [
-                ...gameBadges.map(
-                  (b) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: b.color.withValues(alpha: 0.14),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: b.color.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      child: Icon(b.icon, color: b.color, size: 16),
-                    ),
-                  ),
-                ),
+                ...gameBadges.map(_buildBadge),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -138,44 +135,9 @@ class DetailedPlayerCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 40,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryPurple,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Connect',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  height: 40,
-                  child: OutlinedButton(
-                    onPressed: () => _openProfile(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: AppColors.cardBorder),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Profile'),
-                  ),
-                ),
-              ],
+            PlayerCardActions(
+              onConnect: () {},
+              onProfile: () => _openProfile(context),
             ),
           ],
         ),

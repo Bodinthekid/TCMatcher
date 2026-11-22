@@ -1,27 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 typedef JsonMap = Map<String, dynamic>;
 
 class AuthService {
-  // Variáveis globais para guardar a sessão do utilizador atual
   static int? currentUserId;
   static String? currentUserName;
   static String? currentUserEmail;
   static String? currentAccountType;
 
-  // ENDEREÇO DA API (Com limpeza de barras duplicadas no fim)
   static String get baseUrl {
     final url = (dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api')
         .replaceAll(RegExp(r'/+$'), '');
-    print('🔍 [DEBUG] baseUrl lido do .env: "$url"');
+    debugPrint('[DEBUG] baseUrl lido do .env: "$url"');
     return url;
   }
 
-  // TRATAMENTO DE RESPOSTAS HTTP
   static JsonMap _parseResponse(
     http.Response response,
     int expectedStatus,
@@ -31,12 +29,16 @@ class AuthService {
     try {
       data = jsonDecode(response.body);
     } on FormatException {
-      throw Exception('Resposta inválida do servidor (HTTP ${response.statusCode}).');
+      throw Exception(
+        'Resposta inválida do servidor (HTTP ${response.statusCode}).',
+      );
     }
 
     if (response.statusCode != expectedStatus) {
       final message = data is Map ? data['message'] : null;
-      throw Exception(message is String && message.isNotEmpty ? message : defaultError);
+      throw Exception(
+        message is String && message.isNotEmpty ? message : defaultError,
+      );
     }
 
     if (data is! Map<String, dynamic>) {
@@ -45,10 +47,9 @@ class AuthService {
     return data;
   }
 
-  // PEDIDOS HTTP CENTRALIZADOS (Com Timeout de 10s, Debug e Tratamento de Rede)
   static Future<http.Response> _post(String endpoint, JsonMap body) async {
     final url = Uri.parse('$baseUrl/$endpoint');
-    print('🔗 [DEBUG] URL final POST: $url');
+    debugPrint('[DEBUG] URL final POST: $url');
 
     try {
       final response = await http
@@ -59,7 +60,7 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 10));
 
-      print('📡 [DEBUG] Status Code: ${response.statusCode}');
+      debugPrint('[DEBUG] Status Code: ${response.statusCode}');
       return response;
     } on SocketException {
       throw Exception(
@@ -76,7 +77,6 @@ class AuthService {
     }
   }
 
-  // REGISTAR JOGADOR
   static Future<void> registerPlayerAPI({
     required String name,
     required String email,
@@ -91,7 +91,6 @@ class AuthService {
     _parseResponse(response, 201, 'Erro ao registar jogador.');
   }
 
-  // REGISTAR LOJA
   static Future<void> registerStoreAPI({
     required String storeName,
     required String email,
@@ -112,8 +111,7 @@ class AuthService {
     });
     _parseResponse(response, 201, 'Erro ao registar loja.');
   }
-  
-  // LOGIN (Guarda os dados do utilizador para o perfil)
+
   static Future<JsonMap> loginAPI({
     required String email,
     required String password,
@@ -123,16 +121,17 @@ class AuthService {
       'password': password,
     });
 
-    final data = _parseResponse(response, 200, 'Email ou palavra-passe incorretos.');
-    
+    final data =
+        _parseResponse(response, 200, 'Email ou palavra-passe incorretos.');
+
     final user = data['user'];
     if (user is! Map) {
       throw Exception('Dados do utilizador inválidos.');
     }
 
-    // Preenche as variáveis globais de sessão
     final rawId = user['id'];
-    currentUserId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+    currentUserId =
+        rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
     currentUserName = user['name']?.toString();
     currentUserEmail = user['email']?.toString();
     currentAccountType = user['account_type']?.toString();

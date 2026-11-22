@@ -8,11 +8,8 @@ import 'profile_status_sheet.dart';
 import 'profile_user_stats.dart';
 
 class ProfileHeaderCard extends StatefulWidget {
-  static String savedAvatar =
-      'https://i.pravatar.cc/150?img=47';
-
-  static StatusOption savedStatus =
-      kStatusOptions[1];
+  static String savedAvatar = 'https://i.pravatar.cc/150?img=47';
+  static StatusOption savedStatus = kStatusOptions[1];
 
   final String name;
   final String handleAndLocation;
@@ -20,212 +17,123 @@ class ProfileHeaderCard extends StatefulWidget {
   final String statusLabel;
   final Color statusColor;
   final String bio;
-
   final int followers;
   final int following;
-
   final bool isEditable;
 
   const ProfileHeaderCard({
     super.key,
     this.name = 'Maya Chen',
-    this.handleAndLocation =
-        '@mayacards',
-    this.avatarUrl =
-        'https://i.pravatar.cc/150?img=47',
-    this.statusLabel =
-        'Available to Play',
-    this.statusColor =
-        AppColors.statusAvailable,
-    this.bio =
-        'Competitive Standard player & casual Commander enthusiast.',
+    this.handleAndLocation = '@mayacards',
+    this.avatarUrl = 'https://i.pravatar.cc/150?img=47',
+    this.statusLabel = 'Available to Play',
+    this.statusColor = AppColors.statusAvailable,
+    this.bio = 'Competitive Standard player & casual Commander enthusiast.',
     this.followers = 128,
     this.following = 94,
     this.isEditable = true,
   });
 
   @override
-  State<ProfileHeaderCard>
-      createState() =>
-          _ProfileHeaderCardState();
+  State<ProfileHeaderCard> createState() => _ProfileHeaderCardState();
 }
 
-class _ProfileHeaderCardState
-    extends State<ProfileHeaderCard> {
-  late String _name;
-  late String _handle;
-  late String _bio;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _name = widget.name;
-
-    _handle =
-        widget.handleAndLocation
-            .split(' · ')
-            .first;
-
-    _bio = widget.bio;
-  }
+class _ProfileHeaderCardState extends State<ProfileHeaderCard> {
+  late String _name = widget.name;
+  late String _handle = widget.handleAndLocation.split(' · ').first;
+  late String _bio = widget.bio;
 
   String get _avatar =>
-      widget.isEditable
-          ? ProfileHeaderCard.savedAvatar
-          : widget.avatarUrl;
-
-  String get _statusLabel =>
-      widget.isEditable
-          ? ProfileHeaderCard
-              .savedStatus.label
-          : widget.statusLabel;
-
-  Color get _statusColor =>
-      widget.isEditable
-          ? ProfileHeaderCard
-              .savedStatus.color
-          : widget.statusColor;
-
-  Color get _statusBackground =>
-      widget.isEditable
-          ? ProfileHeaderCard
-              .savedStatus.bg
-          : const Color(0xFF282254);
+      widget.isEditable ? ProfileHeaderCard.savedAvatar : widget.avatarUrl;
+  String get _statusLabel => widget.isEditable
+      ? ProfileHeaderCard.savedStatus.label
+      : widget.statusLabel;
+  Color get _statusColor => widget.isEditable
+      ? ProfileHeaderCard.savedStatus.color
+      : widget.statusColor;
+  Color get _statusBackground => widget.isEditable
+      ? ProfileHeaderCard.savedStatus.bg
+      : const Color(0xFF282254);
 
   void _changeStatus() {
     showProfileStatusSheet(
       context: context,
-      currentLabel:
-          _statusLabel,
-      onSelect: (option) {
-        setState(() {
-          ProfileHeaderCard
-                  .savedStatus =
-              option;
-        });
-      },
+      currentLabel: _statusLabel,
+      onSelect: (opt) => setState(() => ProfileHeaderCard.savedStatus = opt),
     );
   }
 
   Future<void> _editProfile() async {
-    final result =
-        await Navigator.push<
-            EditProfileResult>(
+    final result = await Navigator.push<EditProfileResult>(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            EditProfileScreen(
+        builder: (_) => EditProfileScreen(
           initialName: _name,
-          initialUsername:
-              _handle.replaceFirst(
-            '@',
-            '',
-          ),
+          initialUsername: _handle.replaceFirst('@', ''),
           initialBio: _bio,
           initialAvatarUrl: _avatar,
-          initialFavoriteGameIds: {
-            ...ProfileFavoriteGames
-                .selectedGameIds.value,
-          },
+          initialFavoriteGameIds: {...ProfileFavoriteGames.selectedGameIds.value},
         ),
       ),
     );
+    if (result == null || !mounted) return;
 
-    if (result == null ||
-        !mounted) {
-      return;
-    }
-
-    ProfileFavoriteGames
-        .selectedGameIds.value = {
-      ...result.favoriteGameIds,
-    };
-
+    ProfileFavoriteGames.selectedGameIds.value = {...result.favoriteGameIds};
     setState(() {
       _name = result.name;
-
-      _handle =
-          '@${result.username}';
-
+      _handle = '@${result.username}';
       _bio = result.bio;
-
-      ProfileHeaderCard.savedAvatar =
-          result.avatarUrl;
+      ProfileHeaderCard.savedAvatar = result.avatarUrl;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ProfileAvatarStatus(
               avatarUrl: _avatar,
-              statusColor:
-                  _statusColor,
-              isEditable:
-                  widget.isEditable,
-              onAvatarTap:
-                  _editProfile,
+              statusColor: _statusColor,
+              isEditable: widget.isEditable,
+              onAvatarTap: _editProfile,
             ),
-
             const SizedBox(width: 24),
-
             Expanded(
               child: ProfileUserStats(
                 name: _name,
-                followers:
-                    widget.followers,
-                following:
-                    widget.following,
+                followers: widget.followers,
+                following: widget.following,
               ),
             ),
           ],
         ),
-
         const SizedBox(height: 14),
-
         ProfileHandleStatusRow(
           handle: _handle,
-          statusLabel:
-              _statusLabel,
-          statusColor:
-              _statusColor,
-          statusBackground:
-              _statusBackground,
-          isEditable:
-              widget.isEditable,
-          onStatusTap:
-              _changeStatus,
+          statusLabel: _statusLabel,
+          statusColor: _statusColor,
+          statusBackground: _statusBackground,
+          isEditable: widget.isEditable,
+          onStatusTap: _changeStatus,
         ),
-
         const SizedBox(height: 8),
-
         Text(
           _bio,
           style: const TextStyle(
-            color:
-                AppColors.textSecondary,
+            color: AppColors.textSecondary,
             fontSize: 13.5,
             height: 1.35,
           ),
         ),
-
         const SizedBox(height: 16),
-
         ProfileActionButtons(
-          isEditable:
-              widget.isEditable,
-          onEditProfile:
-              _editProfile,
-          onChangeStatus:
-              _changeStatus,
+          isEditable: widget.isEditable,
+          onEditProfile: _editProfile,
+          onChangeStatus: _changeStatus,
           onConnect: () {},
           onMessage: () {},
         ),

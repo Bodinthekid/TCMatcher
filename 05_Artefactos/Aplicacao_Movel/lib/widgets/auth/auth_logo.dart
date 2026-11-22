@@ -24,7 +24,7 @@ class AuthLogo extends StatelessWidget {
         cacheWidth: 750,
         fit: BoxFit.cover,
         // [Função errorBuilder]: Executada automaticamente se o Flutter não encontrar a imagem 'images/logo.png'
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (_, _, _) => Container(
           width: 100,
           height: 100,
           decoration: BoxDecoration(

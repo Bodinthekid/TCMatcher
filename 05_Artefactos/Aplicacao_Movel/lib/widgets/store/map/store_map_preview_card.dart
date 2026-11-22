@@ -19,7 +19,7 @@ class StoreMapPreviewCard extends StatelessWidget {
         height: 170,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (_, _, _) => Container(
           height: 170,
           color: AppColors.surfaceLight,
           alignment: Alignment.center,

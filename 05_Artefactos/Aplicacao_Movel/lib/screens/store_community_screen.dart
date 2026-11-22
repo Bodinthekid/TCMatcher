@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import '../data/store_community_messages_mock.dart';
+import '../data/store_community_mock_data.dart';
+import '../models/store_community_models.dart';
+import '../services/auth_services.dart';
 import '../theme/app_colors.dart';
-import '../widgets/store/community/store_community_header.dart';
-import '../widgets/store/community/store_channel_selector.dart';
-import '../widgets/store/community/store_message_tile.dart';
-import '../widgets/store/community/store_message_input_bar.dart';
+import '../widgets/community/community_channel_chat_view.dart';
+import '../widgets/store/community/create_channel_dialog.dart';
+import '../widgets/store/community/store_channels_view.dart';
+import 'store_channel_details_screen.dart';
 
 class StoreCommunityScreen extends StatefulWidget {
   const StoreCommunityScreen({super.key});
@@ -13,40 +17,20 @@ class StoreCommunityScreen extends StatefulWidget {
 }
 
 class _StoreCommunityScreenState extends State<StoreCommunityScreen> {
-  int _channel = 1;
   final TextEditingController _msgCtrl = TextEditingController();
 
-  final _channels = [
-    'announcements',
-    'general-chat',
-    'lfg-commander',
-    'pokemon-league',
-    'card-trades',
-  ];
+  late List<CommunityChannel> _channels;
+  late List<CommunityMessage> _messages;
+  late String _selectedChannelId;
+  bool _showingChannelsList = false;
 
-  final _messages = [
-    {
-      'user': 'Mana Vault Official',
-      'role': 'STORE',
-      'time': '2:15 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=68',
-      'text': 'New One Piece Booster Boxes just landed! Tables 1-8 are open for Commander at 6 PM.',
-    },
-    {
-      'user': 'Maya Chen',
-      'role': 'MOD',
-      'time': '2:24 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=47',
-      'text': 'Awesome! Bringing two Commander decks tonight if anyone wants to form a pod.',
-    },
-    {
-      'user': 'Jordan Brooks',
-      'role': 'PLAYER',
-      'time': '2:31 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=11',
-      'text': 'Count me in! Also brought my trade binder for alt-art leaders.',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _channels = List.of(StoreCommunityMockData.channels);
+    _messages = List.of(StoreCommunityMessagesMock.initialMessages);
+    _selectedChannelId = _channels[1].id;
+  }
 
   @override
   void dispose() {
@@ -54,46 +38,107 @@ class _StoreCommunityScreenState extends State<StoreCommunityScreen> {
     super.dispose();
   }
 
+  String get _storeName {
+    final name = AuthService.currentUserName;
+    if (name != null && name.trim().isNotEmpty) return name;
+    return 'Mana Vault Games';
+  }
+
+  CommunityChannel get _activeChannel => _channels.firstWhere(
+        (c) => c.id == _selectedChannelId,
+        orElse: () => _channels.first,
+      );
+
+  void _selectChannel(CommunityChannel channel) {
+    setState(() {
+      _selectedChannelId = channel.id;
+      _showingChannelsList = false;
+    });
+  }
+
+  void _sendMessage() {
+    final text = _msgCtrl.text.trim();
+    if (text.isEmpty) return;
+
+    final now = TimeOfDay.now();
+    final hour = now.hourOfPeriod == 0 ? 12 : now.hourOfPeriod;
+    final minute = now.minute.toString().padLeft(2, '0');
+    final period = now.period == DayPeriod.am ? 'AM' : 'PM';
+
+    setState(() {
+      _messages.add(
+        CommunityMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          channelId: _selectedChannelId,
+          author: _storeName,
+          role: 'STORE',
+          timestamp: 'Today at $hour:$minute $period',
+          dateGroup: 'Today',
+          avatarUrl: 'https://i.pravatar.cc/150?img=68',
+          text: text,
+        ),
+      );
+      _msgCtrl.clear();
+    });
+  }
+
+  Future<void> _openCreateChannel() async {
+    final created = await showCreateChannelDialog(context);
+    if (created != null && mounted) {
+      setState(() {
+        _channels.add(created);
+        _selectedChannelId = created.id;
+        _showingChannelsList = false;
+      });
+    }
+  }
+
+  void _openChannelDetails() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StoreChannelDetailsScreen(
+          channel: _activeChannel,
+          members: StoreCommunityMockData.members,
+          messages: _messages
+              .where((m) => m.channelId == _selectedChannelId)
+              .toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final current = _channels[_channel];
+    final onlineCount =
+        StoreCommunityMockData.members.where((m) => m.isOnline).length;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            StoreCommunityHeader(
-              onMembersTap: () {},
-            ),
-            StoreChannelSelector(
-              channels: _channels,
-              selectedIndex: _channel,
-              onChannelSelected: (i) => setState(() => _channel = i),
-            ),
-            const Divider(color: AppColors.cardBorder, height: 20),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _messages.length,
-                itemBuilder: (_, i) {
-                  final m = _messages[i];
-                  return StoreMessageTile(
-                    user: m['user']!,
-                    role: m['role']!,
-                    time: m['time']!,
-                    avatarUrl: m['avatar']!,
-                    text: m['text']!,
-                  );
-                },
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: _showingChannelsList
+            ? StoreChannelsView(
+                key: const ValueKey('channels'),
+                storeName: _storeName,
+                channels: _channels,
+                selectedChannelId: _selectedChannelId,
+                onlineCount: onlineCount,
+                totalMembers: StoreCommunityMockData.members.length,
+                onChannelSelected: _selectChannel,
+                onAddChannelTap: _openCreateChannel,
+              )
+            : CommunityChannelChatView(
+                key: ValueKey('chat_$_selectedChannelId'),
+                channel: _activeChannel,
+                memberCount: StoreCommunityMockData.members.length,
+                messages: _messages,
+                messageController: _msgCtrl,
+                onBackToChannels: () =>
+                    setState(() => _showingChannelsList = true),
+                onChannelDetailsTap: _openChannelDetails,
+                onSend: _sendMessage,
               ),
-            ),
-            StoreMessageInputBar(
-              controller: _msgCtrl,
-              currentChannel: current,
-              onSend: () {},
-            ),
-          ],
-        ),
       ),
     );
   }
