@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
+    avatar_url VARCHAR(255) NULL;
     password VARCHAR(255) NOT NULL,
     account_type_id TINYINT UNSIGNED NOT NULL DEFAULT 1,  -- 1 = PLAYER
     latitude DECIMAL(10, 8) NULL,
@@ -242,3 +243,14 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     FOREIGN KEY (receiver_id) REFERENCES users(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- 11. TABELA DE LOCALIZACAO PLAYER player_locations
+-- ----------------------------------------------------------------------------
+CREATE TABLE player_locations (
+  user_id      INT PRIMARY KEY,
+  lat          DOUBLE PRECISION NOT NULL, -- sempre aproximada, nunca exata
+  lon          DOUBLE PRECISION NOT NULL, -- sempre aproximada, nunca exata
+  game         VARCHAR(30),
+  updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

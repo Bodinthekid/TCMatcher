@@ -14,11 +14,13 @@ app.use(cors());         // Permite requisições do frontend (Flutter)
 const userRoutes = require('./src/routes/userRoutes');
 const storeRoutes = require('./src/routes/storeRoutes');
 const tournamentRoutes = require('./src/routes/tournamentRoutes');
+const playerRoutes = require('./src/routes/playerRoutes');
 
 // Registar rotas na aplicação
 app.use('/api/users', userRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/players', playerRoutes);
 
 // Rota de teste básica para verificar se o servidor está vivo
 app.get('/', (req, res) => {
@@ -27,6 +29,6 @@ app.get('/', (req, res) => {
 
 // Arrancar o servidor na porta definida no .env ou 3000 por defeito
 // O parâmetro '0.0.0.0' abre o servidor para aceitar conexões de outros dispositivos na mesma rede Wi-Fi
-app.listen(PORT, '0.0.0.0', () =>  {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor a correr na porta ${PORT} e acessível na rede local 🚀`);
 });

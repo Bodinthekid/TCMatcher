@@ -12,6 +12,7 @@ class AuthService {
   static String? currentUserName;
   static String? currentUserEmail;
   static String? currentAccountType;
+  static String? currentToken;
 
   // ENDEREÇO DA API (Com limpeza de barras duplicadas no fim)
   static String get baseUrl {
@@ -112,8 +113,8 @@ class AuthService {
     });
     _parseResponse(response, 201, 'Erro ao registar loja.');
   }
-  
-  // LOGIN (Guarda os dados do utilizador para o perfil)
+
+  // LOGIN (Guarda os dados do utilizador e o token JWT)
   static Future<JsonMap> loginAPI({
     required String email,
     required String password,
@@ -124,10 +125,15 @@ class AuthService {
     });
 
     final data = _parseResponse(response, 200, 'Email ou palavra-passe incorretos.');
-    
+
     final user = data['user'];
     if (user is! Map) {
       throw Exception('Dados do utilizador inválidos.');
+    }
+
+    final token = data['token'];
+    if (token is! String || token.isEmpty) {
+      throw Exception('Token de autenticação não recebido do servidor.');
     }
 
     // Preenche as variáveis globais de sessão
@@ -136,7 +142,17 @@ class AuthService {
     currentUserName = user['name']?.toString();
     currentUserEmail = user['email']?.toString();
     currentAccountType = user['account_type']?.toString();
+    currentToken = token;
 
     return data;
+  }
+
+  // LIMPAR SESSÃO (LOGOUT)
+  static void clearSession() {
+    currentUserId = null;
+    currentUserName = null;
+    currentUserEmail = null;
+    currentAccountType = null;
+    currentToken = null;
   }
 }

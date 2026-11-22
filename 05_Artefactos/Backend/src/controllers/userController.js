@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const db = require('../config/data_base'); // para transações ou inserções adicionais
+const jwt = require('jsonwebtoken');
+
 
 // Listar todos os utilizadores
 exports.getUsers = async (req, res) => {
@@ -107,14 +109,28 @@ exports.loginUser = async (req, res) => {
     }
 
     // 4. Sucesso: Retorna os dados essenciais do utilizador
+    // 4. Sucesso: Gera o token JWT e retorna os dados essenciais do utilizador
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET não definido no .env');
+      return res.status(500).json({ message: 'Erro de configuração de autenticação.' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, account_type: user.account_type },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     return res.status(200).json({
       message: 'Login efetuado com sucesso!',
+      token,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        account_type: user.account_type // Vem já mapeado como 'PLAYER' ou 'STORE' graças ao JOIN no User.findByEmail
-      }
+        account_type: user.account_type,
+      },
+    
     });
 
   } catch (error) {

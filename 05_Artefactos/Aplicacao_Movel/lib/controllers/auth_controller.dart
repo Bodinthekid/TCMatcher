@@ -14,9 +14,14 @@ class AuthController extends ChangeNotifier {
   String? _accountType;
   String? get accountType => _accountType;
 
-  // LINHAS PARA GUARDAR O ID DO UTILIZADOR
+  // ID do utilizador autenticado
   static int? _currentUserId;
   static int? get currentUserId => _currentUserId;
+
+  // Token JWT da sessão atual
+  static String? _token;
+  static String? get currentToken => _token;
+  String? get token => _token;
 
   // REGISTAR JOGADOR
   Future<bool> registerPlayer({
@@ -84,7 +89,8 @@ class AuthController extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _accountType = null;
-    _currentUserId = null; // Limpa anterior
+    _currentUserId = null;
+    _token = null;
     notifyListeners();
 
     try {
@@ -105,9 +111,15 @@ class AuthController extends ChangeNotifier {
         throw Exception('Tipo de conta desconhecido.');
       }
 
-      _accountType = type as String;
+      final receivedToken = data['token'];
+      if (receivedToken is! String || receivedToken.isEmpty) {
+        throw Exception('Token de autenticação não recebido do servidor.');
+      }
 
-      // 🔑 EXTRAI E GUARDA O ID DO UTILIZADOR (converte para int de forma segura)
+      _accountType = type as String;
+      _token = receivedToken;
+
+      // Extrai e guarda o ID do utilizador (converte para int de forma segura)
       final rawId = user['id'];
       _currentUserId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
 
@@ -118,9 +130,19 @@ class AuthController extends ChangeNotifier {
       _isLoading = false;
       _accountType = null;
       _currentUserId = null;
+      _token = null;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
     }
+  }
+
+  // LOGOUT
+  void logout() {
+    _token = null;
+    _currentUserId = null;
+    _accountType = null;
+    _errorMessage = null;
+    notifyListeners();
   }
 }
