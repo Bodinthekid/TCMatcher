@@ -20,12 +20,9 @@ class ProfileScreen extends StatelessWidget {
     super.key,
     this.name,
     this.handleAndLocation,
-    this.avatarUrl =
-        'https://i.pravatar.cc/150?img=47',
-    this.statusLabel =
-        'Available to Play',
-    this.statusColor =
-        AppColors.statusAvailable,
+    this.avatarUrl = 'https://i.pravatar.cc/150?img=47',
+    this.statusLabel = 'Available to Play',
+    this.statusColor = AppColors.statusAvailable,
     this.bio =
         'Competitive Standard player & casual Commander enthusiast. Always down for local matches!',
     this.showBackButton = false,
@@ -33,134 +30,62 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mockProfile =
-        showBackButton
-            ? MockPlayerProfiles.byName(name)
-            : null;
-
+    final mockProfile = showBackButton ? MockPlayerProfiles.byName(name) : null;
     final displayName =
-        mockProfile?.name ??
-        name ??
-        AuthService.currentUserName ??
-        'Player';
-
-    final cleanHandle =
-        displayName
-            .toLowerCase()
-            .replaceAll(' ', '');
-
-    final displayHandle =
-        mockProfile != null
-            ? '@${mockProfile.username}'
-            : handleAndLocation ??
-                '@$cleanHandle';
-
-    final displayAvatar =
-        mockProfile?.avatarUrl ??
-        avatarUrl;
-
-    final displayStatusLabel =
-        mockProfile?.statusLabel ??
-        statusLabel;
-
-    final displayStatusColor =
-        mockProfile?.statusColor ??
-        statusColor;
-
-    final displayBio =
-        mockProfile?.bio ??
-        bio;
-
-    final profileData =
-        mockProfile ??
-        MockPlayerProfiles
-            .currentUserFallback;
+        mockProfile?.name ?? name ?? AuthService.currentUserName ?? 'Player';
+    final cleanHandle = displayName.toLowerCase().replaceAll(' ', '');
+    final displayHandle = mockProfile != null
+        ? '@${mockProfile.username}'
+        : handleAndLocation ?? '@$cleanHandle';
+    final profileData = mockProfile ?? MockPlayerProfiles.currentUserFallback;
 
     return Scaffold(
-      backgroundColor:
-          AppColors.background,
-
-      endDrawer:
-          showBackButton
-              ? null
-              : const ProfileMenuDrawer(),
-
+      backgroundColor: AppColors.background,
+      endDrawer: showBackButton ? null : const ProfileMenuDrawer(),
       appBar: AppBar(
-        backgroundColor:
-            AppColors.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
-        automaticallyImplyLeading:
-            showBackButton,
-        iconTheme:
-            const IconThemeData(
-          color: Colors.white,
-        ),
+        automaticallyImplyLeading: showBackButton,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (!showBackButton)
             Builder(
-              builder: (ctx) =>
-                  IconButton(
+              builder: (ctx) => IconButton(
                 icon: const Icon(
                   Icons.menu_rounded,
                   color: Colors.white,
                   size: 28,
                 ),
-                onPressed: () =>
-                    Scaffold.of(ctx)
-                        .openEndDrawer(),
+                onPressed: () => Scaffold.of(ctx).openEndDrawer(),
               ),
             ),
-
           const SizedBox(width: 8),
         ],
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding:
-              const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ProfileHeaderCard(
                 name: displayName,
-                handleAndLocation:
-                    displayHandle,
-                avatarUrl:
-                    displayAvatar,
-                statusLabel:
-                    displayStatusLabel,
-                statusColor:
-                    displayStatusColor,
-                bio: displayBio,
-                followers:
-                    profileData.followers,
-                following:
-                    profileData.following,
-                isEditable:
-                    !showBackButton,
+                handleAndLocation: displayHandle,
+                avatarUrl: mockProfile?.avatarUrl ?? avatarUrl,
+                statusLabel: mockProfile?.statusLabel ?? statusLabel,
+                statusColor: mockProfile?.statusColor ?? statusColor,
+                bio: mockProfile?.bio ?? bio,
+                followers: profileData.followers,
+                following: profileData.following,
+                isEditable: !showBackButton,
               ),
-
               const SizedBox(height: 22),
-
               ProfileFavoriteGames(
-                isEditable:
-                    !showBackButton,
-                gameIds:
-                    mockProfile
-                        ?.favoriteGameIds,
+                isEditable: !showBackButton,
+                gameIds: mockProfile?.favoriteGameIds,
               ),
-
               const SizedBox(height: 20),
-
-              ProfileMatchLogCard(
-                profileData:
-                    profileData,
-              ),
+              ProfileMatchLogCard(profileData: profileData),
             ],
           ),
         ),

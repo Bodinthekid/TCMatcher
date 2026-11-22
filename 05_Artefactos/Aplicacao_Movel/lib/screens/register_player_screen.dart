@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import '../controllers/auth_controller.dart';
-import '../widgets/auth/auth_logo.dart';
-import '../widgets/auth/auth_text_field.dart';
-import '../widgets/auth/auth_button_row.dart';
+import '../theme/app_colors.dart';
+import '../widgets/auth/register_player_form.dart';
 import 'login_screen.dart';
 
 class RegisterPlayerScreen extends StatefulWidget {
@@ -15,11 +13,10 @@ class RegisterPlayerScreen extends StatefulWidget {
 
 class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final AuthController _authController = AuthController();
 
   @override
@@ -35,7 +32,6 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Envia o nome introduzido pelo utilizador para o backend através do controller
     final success = await _authController.registerPlayer(
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
@@ -50,7 +46,7 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
       );
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     } else {
@@ -75,83 +71,15 @@ class _RegisterPlayerScreenState extends State<RegisterPlayerScreen> {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const AuthLogo(fallbackIcon: Icons.person_add_alt_1_rounded),
-                const SizedBox(height: 40),
-                
-                // NOVO CAMPO: Nome de Utilizador
-                AuthTextField(
-                  controller: _nameController,
-                  hintText: 'Username',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your username.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _emailController,
-                  hintText: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
-                    if (email.isEmpty) return 'Please enter your email.';
-                    if (!email.contains('@') || !email.contains('.')) {
-                      return 'Please enter a valid email.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                AuthTextField(
-                  controller: _passwordController,
-                  hintText: 'Password',
-                  obscureText: true,
-                  validator: (value) {
-                    final password = value?.trim() ?? '';
-                    if (password.isEmpty) return 'Please enter a password.';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                AuthTextField(
-                  controller: _confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
-                  validator: (value) {
-                    final password = value?.trim() ?? '';
-                    if (password.isEmpty) return 'Please confirm your password.';
-                    if (password != _passwordController.text.trim()) {
-                      return 'Passwords do not match.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                AnimatedBuilder(
-                  animation: _authController,
-                  builder: (context, _) {
-                    return _authController.isLoading
-                        ? const CircularProgressIndicator(color: AppColors.primaryPurple)
-                        : AuthButtonRow(
-                            secondaryLabel: 'Back',
-                            onSecondaryTap: () => Navigator.pop(context),
-                            primaryLabel: 'Register',
-                            onPrimaryTap: _handleRegister,
-                            primaryFirst: false,
-                          );
-                  },
-                ),
-              ],
-            ),
+          child: RegisterPlayerForm(
+            formKey: _formKey,
+            nameController: _nameController,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            confirmPasswordController: _confirmPasswordController,
+            authController: _authController,
+            onRegister: _handleRegister,
+            onBack: () => Navigator.pop(context),
           ),
         ),
       ),

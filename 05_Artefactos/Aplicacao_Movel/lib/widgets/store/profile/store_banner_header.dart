@@ -17,7 +17,7 @@ class StoreBannerHeader extends StatelessWidget {
             height: 155,
             width: double.infinity,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 Container(height: 155, color: AppColors.surfaceLight),
           ),
           Positioned(

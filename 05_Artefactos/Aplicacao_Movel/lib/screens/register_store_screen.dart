@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import '../controllers/auth_controller.dart';
-import '../widgets/auth/auth_logo.dart';
-import '../widgets/auth/auth_text_field.dart';
-import '../widgets/auth/auth_button_row.dart';
+import '../theme/app_colors.dart';
+import '../widgets/auth/register_store_form.dart';
 import 'login_screen.dart';
 
 class RegisterStoreScreen extends StatefulWidget {
@@ -15,14 +13,12 @@ class RegisterStoreScreen extends StatefulWidget {
 
 class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _storeNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  final TextEditingController _postalCodeController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-
+  final _storeNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _addressController = TextEditingController();
   final AuthController _authController = AuthController();
 
   @override
@@ -40,7 +36,8 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final fullAddress = '${_addressController.text.trim()}, ${_postalCodeController.text.trim()}';
+    final fullAddress =
+        '${_addressController.text.trim()}, ${_postalCodeController.text.trim()}';
 
     final success = await _authController.registerStore(
       storeName: _storeNameController.text.trim(),
@@ -57,7 +54,7 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
       );
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     } else {
@@ -82,112 +79,17 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const AuthLogo(fallbackIcon: Icons.storefront_rounded),
-                const SizedBox(height: 40),
-
-                AuthTextField(
-                  controller: _storeNameController,
-                  hintText: 'Store Name',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter the store name.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _emailController,
-                  hintText: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
-                    if (email.isEmpty) return 'Please enter your email.';
-                    if (!email.contains('@') || !email.contains('.')) {
-                      return 'Please enter a valid email.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _passwordController,
-                  hintText: 'Password',
-                  obscureText: true,
-                  validator: (value) {
-                    final password = value?.trim() ?? '';
-                    if (password.isEmpty) return 'Please enter a password.';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
-                  validator: (value) {
-                    final password = value?.trim() ?? '';
-                    if (password.isEmpty) return 'Please confirm your password.';
-                    if (password != _passwordController.text.trim()) {
-                      return 'Passwords do not match.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _postalCodeController,
-                  hintText: 'Postal Code (XXXX-XXX)',
-                  keyboardType: TextInputType.text,
-                  validator: (value) {
-                    final postalCode = value?.trim() ?? '';
-                    if (postalCode.isEmpty) return 'Please enter the postal code.';
-                    final regex = RegExp(r'^\d{4}-\d{3}$');
-                    if (!regex.hasMatch(postalCode)) {
-                      return 'Please enter a valid postal code (e.g., 1000-001).';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                AuthTextField(
-                  controller: _addressController,
-                  hintText: 'Address',
-                  keyboardType: TextInputType.streetAddress,
-                  validator: (value) {
-                    final address = value?.trim() ?? '';
-                    if (address.isEmpty) return 'Please enter the store address.';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                AnimatedBuilder(
-                  animation: _authController,
-                  builder: (context, _) {
-                    return _authController.isLoading
-                        ? const CircularProgressIndicator(color: AppColors.primaryPurple)
-                        : AuthButtonRow(
-                            secondaryLabel: 'Back',
-                            onSecondaryTap: () => Navigator.pop(context),
-                            primaryLabel: 'Register',
-                            onPrimaryTap: _handleRegister,
-                            primaryFirst: false,
-                          );
-                  },
-                ),
-              ],
-            ),
+          child: RegisterStoreForm(
+            formKey: _formKey,
+            storeNameController: _storeNameController,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            confirmPasswordController: _confirmPasswordController,
+            postalCodeController: _postalCodeController,
+            addressController: _addressController,
+            authController: _authController,
+            onRegister: _handleRegister,
+            onBack: () => Navigator.pop(context),
           ),
         ),
       ),

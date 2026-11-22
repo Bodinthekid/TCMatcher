@@ -1,14 +1,13 @@
 import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class TournamentService {
   static String get baseUrl =>
       dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000/api';
 
-  // 1. Criar Torneio (POST específico)
-  static Future<dynamic?> postTournament(Map<String, dynamic> bodyData) async {
+  static Future<dynamic> postTournament(Map<String, dynamic> bodyData) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/tournaments'),
@@ -17,12 +16,11 @@ class TournamentService {
       );
       return jsonDecode(response.body);
     } catch (e) {
-      print('Erro de rede: $e');
+      debugPrint('Erro de rede: $e');
       return null;
     }
   }
 
-  // 2. Listar Torneios (GET)
   static Future<List<dynamic>> fetchTournaments() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/tournaments'));
@@ -32,13 +30,12 @@ class TournamentService {
       }
       return [];
     } catch (e) {
-      print('Erro de rede: $e');
+      debugPrint('Erro de rede: $e');
       return [];
     }
   }
 
-  // 3. Método POST genérico (Ex: Participar num torneio)
-  static Future<dynamic?> post(
+  static Future<dynamic> post(
     String endpoint,
     Map<String, dynamic> bodyData,
   ) async {
@@ -50,13 +47,12 @@ class TournamentService {
       );
       return jsonDecode(response.body);
     } catch (e) {
-      print('Erro de rede: $e');
+      debugPrint('Erro de rede: $e');
       return null;
     }
   }
 
-  // 4. Método PUT genérico (Ex: Editar/Atualizar torneio)
-  static Future<dynamic?> put(
+  static Future<dynamic> put(
     String endpoint,
     Map<String, dynamic> bodyData,
   ) async {
@@ -68,13 +64,12 @@ class TournamentService {
       );
       return jsonDecode(response.body);
     } catch (e) {
-      print('Erro de rede: $e');
+      debugPrint('Erro de rede: $e');
       return null;
     }
   }
 
-  // 5. Método DELETE genérico (Ex: Apagar/Cancelar torneio)
-  static Future<dynamic?> delete(String endpoint) async {
+  static Future<dynamic> delete(String endpoint) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl$endpoint'),
@@ -82,7 +77,7 @@ class TournamentService {
       );
       return jsonDecode(response.body);
     } catch (e) {
-      print('Erro de rede: $e');
+      debugPrint('Erro de rede: $e');
       return null;
     }
   }

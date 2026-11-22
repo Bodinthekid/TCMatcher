@@ -1,106 +1,147 @@
 import 'package:flutter/material.dart';
+import '../../../models/store_community_models.dart';
 import '../../../theme/app_colors.dart';
-import '../../../screens/profile_screen.dart';
-import '../../../screens/store_profile_screen.dart';
-import '../../shared/user_avatar.dart';
+import 'store_message_embed_card.dart';
 
 class StoreMessageTile extends StatelessWidget {
-  final String user;
-  final String role;
-  final String time;
-  final String avatarUrl;
-  final String text;
+  final CommunityMessage message;
 
   const StoreMessageTile({
     super.key,
-    required this.user,
-    required this.role,
-    required this.time,
-    required this.avatarUrl,
-    required this.text,
+    required this.message,
   });
 
-  void _openUserProfile(BuildContext context) {
-    if (role == 'STORE') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const StoreProfileScreen()),
-      );
-      return;
-    }
-
-    final handle = '@${user.toLowerCase().replaceAll(' ', '')}';
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfileScreen(
-          name: user,
-          handleAndLocation: '$handle · $role',
-          avatarUrl: avatarUrl,
-          statusLabel: 'Online',
-          statusColor: AppColors.statusOnline,
-          bio: text,
-          showBackButton: true,
-        ),
-      ),
-    );
+  Color _roleColor(String role) {
+    if (role == 'STORE') return AppColors.primaryPurple;
+    if (role == 'MOD') return AppColors.accentCyan;
+    return AppColors.textMuted;
   }
 
   @override
   Widget build(BuildContext context) {
+    final showRole = message.role == 'STORE' || message.role == 'MOD';
+    final badgeColor = _roleColor(message.role);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: () => _openUserProfile(context),
-        behavior: HitTestBehavior.opaque,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            UserAvatar(
-              imageUrl: avatarUrl,
-              size: 38,
-              statusColor: AppColors.statusOnline,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipOval(
+            child: Image.network(
+              message.avatarUrl,
+              width: 38,
+              height: 38,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                width: 38,
+                height: 38,
+                color: AppColors.surfaceLight,
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.textMuted,
+                  size: 20,
+                ),
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        user,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 2,
+                  children: [
+                    Text(
+                      message.author,
+                      style: TextStyle(
+                        color: message.role == 'STORE'
+                            ? AppColors.accentCyan
+                            : Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (showRole)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          message.role,
+                          style: TextStyle(
+                            color: badgeColor,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.4,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '$role · $time',
-                        style: const TextStyle(
-                          color: AppColors.accentCyan,
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      message.timestamp,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message.text,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13.8,
+                    height: 1.38,
                   ),
-                  const SizedBox(height: 4),
+                ),
+                if (message.linkUrl != null) ...[
+                  const SizedBox(height: 6),
                   Text(
-                    text,
+                    message.linkUrl!,
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      height: 1.35,
+                      color: AppColors.accentCyan,
+                      fontSize: 12.5,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.accentCyan,
                     ),
                   ),
                 ],
-              ),
+                if (message.imageUrl != null) ...[
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      message.imageUrl!,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        height: 120,
+                        color: AppColors.surfaceLight,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (message.embed != null)
+                  StoreMessageEmbedCard(embed: message.embed!),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

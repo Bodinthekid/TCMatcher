@@ -41,6 +41,8 @@ dependencies:
   google_maps_flutter: ^2.5.3  # 👈 Pacote oficial do Google Maps
   geolocator: ^10.1.0         # 👈 Útil para obter a localização atual do utilizador
   pointer_interceptor: ^0.10.1+3
+  scaled_app: ^2.3.2
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -52,12 +54,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  http: ^1.2.0
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
 
   # The following line ensures that the Material Icons font is

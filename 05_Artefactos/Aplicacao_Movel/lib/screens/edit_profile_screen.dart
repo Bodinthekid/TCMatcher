@@ -1,25 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/edit_profile_result.dart';
 import '../theme/app_colors.dart';
-import '../widgets/profile/edit_favorite_games_section.dart';
-import '../widgets/profile/edit_profile_field.dart';
+import '../widgets/profile/edit_profile_form_body.dart';
 import '../widgets/profile/profile_avatar_sheet.dart';
-import '../widgets/shared_widgets.dart';
 
-class EditProfileResult {
-  final String name;
-  final String username;
-  final String bio;
-  final String avatarUrl;
-  final Set<String> favoriteGameIds;
-
-  const EditProfileResult({
-    required this.name,
-    required this.username,
-    required this.bio,
-    required this.avatarUrl,
-    required this.favoriteGameIds,
-  });
-}
+export '../models/edit_profile_result.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String initialName;
@@ -38,39 +23,26 @@ class EditProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<EditProfileScreen> createState() =>
-      _EditProfileScreenState();
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _usernameController;
   late final TextEditingController _bioController;
-
   late String _avatarUrl;
   late Set<String> _favoriteGameIds;
 
   @override
   void initState() {
     super.initState();
-
-    _nameController = TextEditingController(
-      text: widget.initialName,
-    );
-
+    _nameController = TextEditingController(text: widget.initialName);
     _usernameController = TextEditingController(
       text: widget.initialUsername.replaceFirst('@', ''),
     );
-
-    _bioController = TextEditingController(
-      text: widget.initialBio,
-    );
-
+    _bioController = TextEditingController(text: widget.initialBio);
     _avatarUrl = widget.initialAvatarUrl;
-
-    _favoriteGameIds = {
-      ...widget.initialFavoriteGameIds,
-    };
+    _favoriteGameIds = {...widget.initialFavoriteGameIds};
   }
 
   @override
@@ -78,20 +50,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController.dispose();
     _usernameController.dispose();
     _bioController.dispose();
-
     super.dispose();
-  }
-
-  void _changePicture() {
-    showProfileAvatarSheet(
-      context: context,
-      currentUrl: _avatarUrl,
-      onSelect: (url) {
-        setState(() {
-          _avatarUrl = url;
-        });
-      },
-    );
   }
 
   void _toggleFavoriteGame(String gameId) {
@@ -106,23 +65,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _saveProfile() {
     final name = _nameController.text.trim();
-
     final username = _usernameController.text
         .trim()
         .replaceAll(' ', '')
         .replaceFirst('@', '');
 
-    final bio = _bioController.text.trim();
-
     if (name.isEmpty || username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Name and username cannot be empty.',
-          ),
-        ),
+        const SnackBar(content: Text('Name and username cannot be empty.')),
       );
-
       return;
     }
 
@@ -131,11 +82,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       EditProfileResult(
         name: name,
         username: username,
-        bio: bio,
+        bio: _bioController.text.trim(),
         avatarUrl: _avatarUrl,
-        favoriteGameIds: {
-          ..._favoriteGameIds,
-        },
+        favoriteGameIds: {..._favoriteGameIds},
       ),
     );
   }
@@ -144,20 +93,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
-
         leading: IconButton(
-          icon: const Icon(
-            Icons.close_rounded,
-            color: Colors.white,
-          ),
+          icon: const Icon(Icons.close_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-
         title: const Text(
           'Edit profile',
           style: TextStyle(
@@ -166,7 +109,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-
         actions: [
           TextButton(
             onPressed: _saveProfile,
@@ -181,78 +123,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ],
       ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
+      body: EditProfileFormBody(
+        avatarUrl: _avatarUrl,
+        nameController: _nameController,
+        usernameController: _usernameController,
+        bioController: _bioController,
+        favoriteGameIds: _favoriteGameIds,
+        onEditPicture: () => showProfileAvatarSheet(
+          context: context,
+          currentUrl: _avatarUrl,
+          onSelect: (url) => setState(() => _avatarUrl = url),
         ),
-        child: Column(
-          children: [
-            UserAvatar(
-              imageUrl: _avatarUrl,
-              size: 96,
-              statusColor: AppColors.statusOnline,
-            ),
-
-            const SizedBox(height: 8),
-
-            TextButton(
-              onPressed: _changePicture,
-              child: const Text(
-                'Edit picture',
-                style: TextStyle(
-                  color: AppColors.accentCyan,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            EditProfileField(
-              label: 'Name',
-              controller: _nameController,
-            ),
-
-            const Divider(
-              color: AppColors.cardBorder,
-              height: 1,
-            ),
-
-            EditProfileField(
-              label: 'Username',
-              controller: _usernameController,
-              prefixText: '@',
-            ),
-
-            const Divider(
-              color: AppColors.cardBorder,
-              height: 1,
-            ),
-
-            EditProfileField(
-              label: 'Bio',
-              controller: _bioController,
-              maxLines: 4,
-            ),
-
-            const Divider(
-              color: AppColors.cardBorder,
-              height: 1,
-            ),
-
-            const SizedBox(height: 24),
-
-            EditFavoriteGamesSection(
-              selectedGameIds: _favoriteGameIds,
-              onToggle: _toggleFavoriteGame,
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
+        onToggleGame: _toggleFavoriteGame,
       ),
     );
   }

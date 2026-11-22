@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import 'store_map_screen.dart';
+import '../widgets/shared/app_bottom_nav_bar.dart';
 import 'store_community_screen.dart';
 import 'store_events_screen.dart';
 import 'store_profile_screen.dart';
@@ -15,78 +15,35 @@ class StoreShellScreen extends StatefulWidget {
 class _StoreShellScreenState extends State<StoreShellScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    StoreMapScreen(),
+  static const List<Widget> _screens = [
     StoreCommunityScreen(),
     StoreEventsScreen(),
     StoreProfileScreen(),
   ];
 
+  static const List<AppBottomNavItem> _navItems = [
+    AppBottomNavItem(icon: Icons.forum_outlined, label: 'Community', iconSize: 22),
+    AppBottomNavItem(icon: Icons.calendar_today_outlined, label: 'Events', iconSize: 20),
+    AppBottomNavItem(icon: Icons.person_outline, label: 'Profile', iconSize: 22),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: _screens[_currentIndex],
+        child: _screens[safeIndex],
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(
-            top: BorderSide(
-              color: AppColors.cardBorder,
-              width: 1,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primaryPurple,
-          unselectedItemColor: AppColors.textSecondary,
-          selectedLabelStyle: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.map_outlined, size: 22),
-              ),
-              label: 'Map',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.forum_outlined, size: 22),
-              ),
-              label: 'Community',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.calendar_today_outlined, size: 20),
-              ),
-              label: 'Events',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.person_outline, size: 22),
-              ),
-              label: 'Profile',
-            ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: safeIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: _navItems,
+        selectedColor: AppColors.primaryPurple,
+        labelFontSize: 11,
+        selectedFontWeight: FontWeight.w700,
+        splashRadius: 28,
       ),
     );
   }
